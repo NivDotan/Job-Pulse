@@ -1,0 +1,2845 @@
+[
+    {
+        "Company": "tonkean",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "PayU",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "BigID",
+        "LinkType": "green"
+    },
+    {
+        "Company": "automatit",
+        "LinkType": "comeet",
+        "Unique Identifier": "26.003 "
+    },
+    {
+        "Company": "Acronis",
+        "LinkType": "green"
+    },
+    {
+        "Company": "BoschGroup",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "Dynatrace1",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "PlainID",
+        "LinkType": "comeet",
+        "Unique Identifier": "C4.00C "
+    },
+    {
+        "Company": "AveryDennison",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "honeycombinsurance",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Incredibuild",
+        "LinkType": "comeet",
+        "Unique Identifier": "66.00F "
+    },
+    {
+        "Company": "DoubleVerify",
+        "LinkType": "green"
+    },
+    {
+        "Company": "RazorLabs",
+        "LinkType": "comeet",
+        "Unique Identifier": "A5.002"
+    },
+    {
+        "Company": "bottomlinetechnologies",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Melio",
+        "LinkType": "green"
+    },
+    {
+        "Company": "digitalturbine?location=Petach%20Tikva%2C%20Israel",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "Mobileye",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "residenthome",
+        "LinkType": "green"
+    },
+    {
+        "Company": "AudioCodes",
+        "LinkType": "comeet",
+        "Unique Identifier": "85.004 "
+    },
+    {
+        "Company": "ACS",
+        "LinkType": "comeet",
+        "Unique Identifier": "14.000"
+    },
+    {
+        "Company": "Coralogix",
+        "LinkType": "comeet",
+        "Unique Identifier": "06.004 "
+    },
+    {
+        "Company": "ziprecruiter",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Datarails",
+        "LinkType": "comeet",
+        "Unique Identifier": "53.005 "
+    },
+    {
+        "Company": "Cobwebs Technologies",
+        "LinkType": "comeet",
+        "Unique Identifier": "Unknown "
+    },
+    {
+        "Company": "Solaredge",
+        "LinkType": "comeet",
+        "Unique Identifier": "71.00A"
+    },
+    {
+        "Company": "Guesty",
+        "LinkType": "comeet",
+        "Unique Identifier": "10.000 "
+    },
+    {
+        "Company": "JVP",
+        "LinkType": "comeet",
+        "Unique Identifier": "35.00E "
+    },
+    {
+        "Company": "Snyk",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Innovid",
+        "LinkType": "green"
+    },
+    {
+        "Company": "landacorp",
+        "LinkType": "comeet",
+        "Unique Identifier": "A4.000"
+    },
+    {
+        "Company": "HoneyBook",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Apiiro",
+        "LinkType": "green"
+    },
+    {
+        "Company": "vimeo?offices%5B%5D=83760",
+        "LinkType": "green"
+    },
+    {
+        "Company": "GlobalBit",
+        "LinkType": "comeet",
+        "Unique Identifier": "D5.006 "
+    },
+    {
+        "Company": "Similarweb",
+        "LinkType": "green"
+    },
+    {
+        "Company": "foresightauto",
+        "LinkType": "comeet",
+        "Unique Identifier": "13.000",
+        "OtherName": "Foresight Automotive"
+    },
+    {
+        "Company": "Rekor",
+        "LinkType": "comeet",
+        "Unique Identifier": "96.007 "
+    },
+    {
+        "Company": "Aeronautics",
+        "LinkType": "comeet",
+        "Unique Identifier": "72.002"
+    },
+    {
+        "Company": "Playstudios",
+        "LinkType": "comeet",
+        "Unique Identifier": "E2.00B "
+    },
+    {
+        "Company": "CyberInt",
+        "LinkType": "comeet",
+        "Unique Identifier": "83.006 "
+    },
+    {
+        "Company": "Lili",
+        "LinkType": "comeet",
+        "Unique Identifier": "A6.009 "
+    },
+    {
+        "Company": "Dustphotonics",
+        "LinkType": "comeet",
+        "Unique Identifier": "05.00B "
+    },
+    {
+        "Company": "LivePerson",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Zscaler",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Veeva",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "Global-e",
+        "LinkType": "comeet",
+        "Unique Identifier": "62.002 "
+    },
+    {
+        "Company": "ScyllaDB",
+        "LinkType": "comeet",
+        "Unique Identifier": "E4.006 "
+    },
+    {
+        "Company": "Voyantis",
+        "LinkType": "comeet",
+        "Unique Identifier": "86.00B "
+    },
+    {
+        "Company": "Okoora",
+        "LinkType": "comeet",
+        "Unique Identifier": "85.00C "
+    },
+    {
+        "Company": "PTC",
+        "LinkType": "comeet",
+        "Unique Identifier": "32.005 "
+    },
+    {
+        "Company": "Viber",
+        "LinkType": "comeet",
+        "Unique Identifier": "04.002 "
+    },
+    {
+        "Company": "Dynatrace",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "CyCognito",
+        "LinkType": "comeet",
+        "Unique Identifier": "14.00A "
+    },
+    {
+        "Company": "Shopic",
+        "LinkType": "comeet",
+        "Unique Identifier": "E6.002 "
+    },
+    {
+        "Company": "Roundforest",
+        "LinkType": "comeet",
+        "Unique Identifier": "82.003 "
+    },
+    {
+        "Company": "Hunters",
+        "LinkType": "comeet",
+        "Unique Identifier": "67.007 "
+    },
+    {
+        "Company": "ServiceNow",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "Browzwear",
+        "LinkType": "comeet",
+        "Unique Identifier": "03.000 "
+    },
+    {
+        "Company": "samsung",
+        "LinkType": "comeet",
+        "Unique Identifier": "D4.005 ",
+        "OtherName": "Samsung Research and Development Center Israel"
+    },
+    {
+        "Company": "EasySend",
+        "LinkType": "comeet",
+        "Unique Identifier": "D5.009 "
+    },
+    {
+        "Company": "FundGuard",
+        "LinkType": "comeet",
+        "Unique Identifier": "37.002 "
+    },
+    {
+        "Company": "BeamUP",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Upstream",
+        "LinkType": "comeet",
+        "Company_id": "E4.003",
+        "Unique Identifier": "E4.003"
+    },
+    {
+        "Company": "CYE",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "BUYME",
+        "LinkType": "comeet",
+        "Unique Identifier": "B2.008 "
+    },
+    {
+        "Company": "logz",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "Prospera",
+        "LinkType": "comeet",
+        "Unique Identifier": "C5.00F"
+    },
+    {
+        "Company": "accessiBe",
+        "LinkType": "comeet",
+        "Unique Identifier": "D5.00B "
+    },
+    {
+        "Company": "Ilyon",
+        "LinkType": "comeet",
+        "Unique Identifier": "42.00A "
+    },
+    {
+        "Company": "BrainPOP",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Komodor",
+        "LinkType": "comeet",
+        "Unique Identifier": "96.005 "
+    },
+    {
+        "Company": "AI21",
+        "LinkType": "comeet",
+        "Unique Identifier": "E6.001 "
+    },
+    {
+        "Company": "Tenengroup",
+        "LinkType": "comeet",
+        "Unique Identifier": "93.00C "
+    },
+    {
+        "Company": "Cyberbit",
+        "LinkType": "comeet",
+        "Unique Identifier": "C3.00E "
+    },
+    {
+        "Company": "d-fendsolutions",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "aristanetworks",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "Ultra",
+        "LinkType": "comeet",
+        "Unique Identifier": "E3.004 "
+    },
+    {
+        "Company": "Cynet",
+        "LinkType": "comeet",
+        "Unique Identifier": "33.00D "
+    },
+    {
+        "Company": "CytoReason",
+        "LinkType": "comeet",
+        "Unique Identifier": "16.002 "
+    },
+    {
+        "Company": "Communix",
+        "LinkType": "comeet",
+        "Unique Identifier": "86.006"
+    },
+    {
+        "Company": "Arpeely",
+        "LinkType": "comeet",
+        "Unique Identifier": "57.001 "
+    },
+    {
+        "Company": "ACS",
+        "LinkType": "comeet",
+        "Unique Identifier": "14.000"
+    },
+    {
+        "Company": "PayZen",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "ArmisSecurity",
+        "LinkType": "green"
+    },
+    {
+        "Company": "activefence",
+        "LinkType": "comeet",
+        "Unique Identifier": "D5.005 "
+    },
+    {
+        "Company": "tomorrow",
+        "LinkType": "green"
+    },
+    {
+        "Company": "insightec",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Zadara",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "ControlUp",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "MeMed",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Via",
+        "LinkType": "green"
+    },
+    {
+        "Company": "SQream",
+        "LinkType": "comeet",
+        "Unique Identifier": "45.00B "
+    },
+    {
+        "Company": "Cellebrite",
+        "LinkType": "comeet",
+        "Unique Identifier": "C3.00F"
+    },
+    {
+        "Company": "Mitiga",
+        "LinkType": "comeet",
+        "Unique Identifier": "26.00B "
+    },
+    {
+        "Company": "Pentera",
+        "LinkType": "comeet",
+        "Unique Identifier": "C5.00D "
+    },
+    {
+        "Company": "EverC",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "Cloudinary",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "KAZUAR",
+        "LinkType": "comeet",
+        "Unique Identifier": "B4.008 "
+    },
+    {
+        "Company": "recruitingteam",
+        "LinkType": "comeet",
+        "Unique Identifier": "F3.00B "
+    },
+    {
+        "Company": "mPrest",
+        "LinkType": "comeet",
+        "Unique Identifier": "38.005 "
+    },
+    {
+        "Company": "Agmatix",
+        "LinkType": "comeet",
+        "Unique Identifier": "16.003 "
+    },
+    {
+        "Company": "abra_rnd",
+        "LinkType": "comeet",
+        "Unique Identifier": "15.007 "
+    },
+    {
+        "Company": "atbayjobs",
+        "LinkType": "green",
+        "OtherName": "At-Bay"
+    },
+    {
+        "Company": "Kaltura",
+        "LinkType": "comeet",
+        "Unique Identifier": "E2.00D "
+    },
+    {
+        "Company": "cybellum",
+        "LinkType": "comeet",
+        "Unique Identifier": "D4.001"
+    },
+    {
+        "Company": "Bringg",
+        "LinkType": "green"
+    },
+    {
+        "Company": "starkware",
+        "LinkType": "comeet",
+        "Unique Identifier": "C6.00E "
+    },
+    {
+        "Company": "Leverate",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "QualityScore",
+        "LinkType": "comeet",
+        "Unique Identifier": "94.002 "
+    },
+    {
+        "Company": "abra",
+        "LinkType": "comeet",
+        "Company_id": "12.003",
+        "Unique Identifier": "12.003 "
+    },
+    {
+        "Company": "Appsforce",
+        "LinkType": "comeet",
+        "Unique Identifier": "09.00C "
+    },
+    {
+        "Company": "PubPlus",
+        "LinkType": "comeet",
+        "Unique Identifier": "D4.008 "
+    },
+    {
+        "Company": "LiveU",
+        "LinkType": "comeet",
+        "Unique Identifier": "90.00C "
+    },
+    {
+        "Company": "onezerobank",
+        "LinkType": "comeet",
+        "Unique Identifier": "36.00A "
+    },
+    {
+        "Company": "Immunai",
+        "LinkType": "comeet",
+        "Unique Identifier": "37.009 "
+    },
+    {
+        "Company": "Wolt",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "Upsolver",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Vulcan",
+        "LinkType": "comeet",
+        "Unique Identifier": "94.00E "
+    },
+    {
+        "Company": "gongio",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Pliops",
+        "LinkType": "comeet",
+        "Unique Identifier": "05.004 "
+    },
+    {
+        "Company": "Checkoutcom1",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "artmedical",
+        "LinkType": "comeet",
+        "Unique Identifier": "35.00F "
+    },
+    {
+        "Company": "CardinalOps",
+        "LinkType": "comeet",
+        "Unique Identifier": "66.005 "
+    },
+    {
+        "Company": "Amimon",
+        "LinkType": "comeet",
+        "Unique Identifier": "50.00C "
+    },
+    {
+        "Company": "meshpayments",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Team8",
+        "LinkType": "comeet",
+        "Unique Identifier": "61.003 "
+    },
+    {
+        "Company": "Noname",
+        "LinkType": "comeet",
+        "Unique Identifier": "86.001 "
+    },
+    {
+        "Company": "Empathy",
+        "LinkType": "comeet",
+        "Unique Identifier": "F8.007 "
+    },
+    {
+        "Company": "XTEND",
+        "LinkType": "comeet",
+        "Unique Identifier": "85.00A "
+    },
+    {
+        "Company": "khealthcareers",
+        "LinkType": "green"
+    },
+    {
+        "Company": "REE",
+        "LinkType": "comeet",
+        "Unique Identifier": "D3.00B"
+    },
+    {
+        "Company": "PaloAltoNetworks2",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "LunaSolutions",
+        "LinkType": "green"
+    },
+    {
+        "Company": "DealHub",
+        "LinkType": "comeet",
+        "Unique Identifier": "86.005 "
+    },
+    {
+        "Company": "Cymotive",
+        "LinkType": "comeet",
+        "Unique Identifier": "F1.008 "
+    },
+    {
+        "Company": "Nanit",
+        "LinkType": "green"
+    },
+    {
+        "Company": "NanoDimension",
+        "LinkType": "comeet",
+        "Unique Identifier": "62.003",
+        "OtherName": "Nano Dimension"
+    },
+    {
+        "Company": "ParallelWireless",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "Spark-Hire",
+        "LinkType": "comeet",
+        "Unique Identifier": "30.005 ",
+        "OtherName":"At-Bay"
+    },
+    {
+        "Company": "Affilomania",
+        "LinkType": "comeet",
+        "Unique Identifier": "70.006 "
+    },
+    {
+        "Company": "Matific",
+        "LinkType": "comeet",
+        "Unique Identifier": "62.000 "
+    },
+    {
+        "Company": "Maytronics",
+        "LinkType": "comeet",
+        "Company_id": "E3.008",
+        "Unique Identifier": "E3.008 "
+    },
+    {
+        "Company": "INFINIDAT",
+        "LinkType": "comeet",
+        "Unique Identifier": "D6.003 "
+    },
+    {
+        "Company": "FrontStory",
+        "LinkType": "comeet",
+        "Unique Identifier": "04.008 "
+    },
+    {
+        "Company": "PaloAltoNetworks2",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "SNC",
+        "LinkType": "comeet",
+        "Unique Identifier": "71.00D "
+    },
+    {
+        "Company": "Easy",
+        "LinkType": "comeet",
+        "Unique Identifier": "B5.001 "
+    },
+    {
+        "Company": "CardoSystems",
+        "LinkType": "comeet",
+        "Unique Identifier": "F2.003"
+    },
+    {
+        "Company": "Vonage",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Lumenis",
+        "LinkType": "comeet",
+        "Unique Identifier": "A1.00C "
+    },
+    {
+        "Company": "BioCatch",
+        "LinkType": "comeet",
+        "Unique Identifier": "03.00E "
+    },
+    {
+        "Company": "Pendo",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Navina",
+        "LinkType": "comeet",
+        "Unique Identifier": "E6.00C "
+    },
+    {
+        "Company": "Novidea",
+        "LinkType": "comeet",
+        "Unique Identifier": "E5.00A "
+    },
+    {
+        "Company": "Workiz",
+        "LinkType": "comeet",
+        "Unique Identifier": "F6.006 "
+    },
+    {
+        "Company": "Bigabid",
+        "LinkType": "comeet",
+        "Unique Identifier": "A4.003 "
+    },
+    {
+        "Company": "drweng",
+        "LinkType": "green"
+    },
+    {
+        "Company": "bluevineisrael",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Mobileye",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "Konnecto",
+        "LinkType": "comeet",
+        "Unique Identifier": "36.00C "
+    },
+    {
+        "Company": "Torq",
+        "LinkType": "green"
+    },
+    {
+        "Company": "SafeBreach",
+        "LinkType": "comeet",
+        "Unique Identifier": "53.004 "
+    },
+    {
+        "Company": "Caja",
+        "LinkType": "comeet",
+        "Unique Identifier": "E3.00D "
+    },
+    {
+        "Company": "SeekingAlpha",
+        "LinkType": "comeet",
+        "Unique Identifier": "46.006"
+    },
+    {
+        "Company": "Moonshot",
+        "LinkType": "comeet",
+        "Unique Identifier": "87.005 "
+    },
+    {
+        "Company": "moonactive",
+        "LinkType": "comeet",
+        "Unique Identifier": "A2.00C"
+    },
+    {
+        "Company": "CYE",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "outbraininc",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Thetaray",
+        "LinkType": "comeet",
+        "Unique Identifier": "72.00F "
+    },
+    {
+        "Company": "nimbleway",
+        "LinkType": "comeet",
+        "Unique Identifier": "09.00F"
+    },
+    {
+        "Company": "Wix2?search=israel",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "Syte.ai",
+        "LinkType": "comeet",
+        "Unique Identifier": "74.002 "
+    },
+    {
+        "Company": "NICE",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Appnext",
+        "LinkType": "comeet",
+        "Unique Identifier": "42.003 "
+    },
+    {
+        "Company": "Vim",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Zesty",
+        "LinkType": "comeet",
+        "Unique Identifier": "06.000 "
+    },
+    {
+        "Company": "Lumigo",
+        "LinkType": "comeet",
+        "Unique Identifier": "04.001 "
+    },
+    {
+        "Company": "HUMAN",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "Citadel",
+        "LinkType": "comeet",
+        "Unique Identifier": "33.003 "
+    },
+    {
+        "Company": "Optimove",
+        "LinkType": "green"
+    },
+    {
+        "Company": "shieldfc",
+        "LinkType": "comeet",
+        "Unique Identifier": "A5.00E "
+    },
+    {
+        "Company": "Ludeo",
+        "LinkType": "comeet",
+        "Unique Identifier": "D7.008"
+    },
+    {
+        "Company": "VoyagerLabs",
+        "LinkType": "comeet",
+        "Unique Identifier": "63.00A"
+    },
+    {
+        "Company": "WalkMe",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "ZIM",
+        "LinkType": "comeet",
+        "Unique Identifier": "72.008 "
+    },
+    {
+        "Company": "Vi",
+        "LinkType": "comeet",
+        "Unique Identifier": "B1.002 "
+    },
+    {
+        "Company": "Aspectiva",
+        "LinkType": "comeet",
+        "Unique Identifier": "35.000 "
+    },
+    {
+        "Company": "helloheart",
+        "LinkType": "green"
+    },
+    {
+        "Company": "doitintl",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Silverfort",
+        "LinkType": "comeet",
+        "Unique Identifier": "54.007 "
+    },
+    {
+        "Company": "Cynerio",
+        "LinkType": "comeet",
+        "Unique Identifier": "16.00E "
+    },
+    {
+        "Company": "PaloAltoNetworks2",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "VASTData",
+        "LinkType": "comeet",
+        "Unique Identifier": "43.001"
+    },
+    {
+        "Company": "intelligo",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Sorbet",
+        "LinkType": "comeet",
+        "Unique Identifier": "17.002 "
+    },
+    {
+        "Company": "CrossRiver",
+        "LinkType": "comeet",
+        "Unique Identifier": "C7.00F"
+    },
+    {
+        "Company": "K2view",
+        "LinkType": "comeet",
+        "Unique Identifier": "D5.000 "
+    },
+    {
+        "Company": "pagayais",
+        "LinkType": "green",
+        "OtherName": "Pagaya Israel"
+    },
+    {
+        "Company": "SodaStream",
+        "LinkType": "comeet",
+        "Unique Identifier": "40.008 "
+    },
+    {
+        "Company": "Optibus",
+        "LinkType": "comeet",
+        "Unique Identifier": "D1.00C "
+    },
+    {
+        "Company": "paragon",
+        "LinkType": "comeet",
+        "Unique Identifier": "76.006"
+    },
+    {
+        "Company": "fiverr",
+        "LinkType": "comeet",
+        "Unique Identifier": "60.002"
+    },
+    {
+        "Company": "catonetworks",
+        "LinkType": "green",
+        "OtherName": "Cato Networks"
+    },
+    {
+        "Company": "Surecomp",
+        "LinkType": "comeet",
+        "Unique Identifier": "24.00E"
+    },
+    {
+        "Company": "atera",
+        "LinkType": "comeet",
+        "Unique Identifier": "63.00B"
+    },
+    {
+        "Company": "tikalk",
+        "LinkType": "comeet",
+        "Unique Identifier": "68.00C"
+    },
+    {
+        "Company": "Aidoc",
+        "LinkType": "comeet",
+        "Unique Identifier": "B4.007"
+    },
+    {
+        "Company": "fetcherr",
+        "LinkType": "comeet",
+        "Unique Identifier": "68.006"
+    },
+    {
+        "Company": "innoviz",
+        "LinkType": "comeet",
+        "Unique Identifier": "52.004"
+    },
+    {
+        "Company": "waterfall-security",
+        "LinkType": "comeet",
+        "Unique Identifier": "C7.009"
+    },
+    {
+        "Company": "wsc-sports",
+        "LinkType": "comeet",
+        "Unique Identifier": "93.007"
+    },
+    {
+        "Company": "plus500",
+        "LinkType": "comeet",
+        "Unique Identifier": "A1.00F"
+    },
+    {
+        "Company": "lsports",
+        "LinkType": "comeet",
+        "Unique Identifier": "26.002"
+    },
+    {
+        "Company": "clinch",
+        "LinkType": "comeet",
+        "Unique Identifier": "42.007"
+    },
+    {
+        "Company": "cognyte",
+        "LinkType": "comeet",
+        "Unique Identifier": "F2.009"
+    },
+    {
+        "Company": "Claroty",
+        "LinkType": "comeet",
+        "Unique Identifier": "F2.004"
+    },
+    {
+        "Company": "nextsilicon",
+        "LinkType": "comeet",
+        "Unique Identifier": "18.007"
+    },
+    {
+        "Company": "beehero",
+        "LinkType": "comeet",
+        "Unique Identifier": "78.00E"
+    },
+    {
+        "Company": "final",
+        "LinkType": "comeet",
+        "Unique Identifier": "C0.009"
+    },
+    {
+        "Company": "island",
+        "LinkType": "comeet",
+        "Unique Identifier": "09.00A"
+    },
+    {
+        "Company": "agora",
+        "LinkType": "comeet",
+        "Unique Identifier": "08.007"
+    },
+    {
+        "Company": "gk8",
+        "LinkType": "comeet",
+        "Unique Identifier": "E8.000"
+    },
+    {
+        "Company": "lusha",
+        "LinkType": "comeet",
+        "Unique Identifier": "73.00B"
+    },
+    {
+        "Company": "ionix",
+        "LinkType": "comeet",
+        "Unique Identifier": "08.003"
+    },
+    {
+        "Company": "gloat",
+        "LinkType": "comeet",
+        "Unique Identifier": "E5.000"
+    },
+    {
+        "Company": "driivz",
+        "LinkType": "comeet",
+        "Unique Identifier": "C4.00B"
+    },
+    {
+        "Company": "fullpath",
+        "LinkType": "comeet",
+        "Unique Identifier": "54.002"
+    },
+    {
+        "Company": "jifiti",
+        "LinkType": "comeet",
+        "Unique Identifier": "47.005"
+    },
+    {
+        "Company": "chargeflow",
+        "LinkType": "comeet",
+        "Unique Identifier": "29.001"
+    },
+    {
+        "Company": "dig",
+        "LinkType": "comeet",
+        "Unique Identifier": "E7.00B"
+    },
+    {
+        "Company": "exodigo",
+        "LinkType": "comeet",
+        "Unique Identifier": "89.005"
+    },
+    {
+        "Company": "gauzy",
+        "LinkType": "comeet",
+        "Unique Identifier": "C5.003"
+    },
+    {
+        "Company": "aitechsystems",
+        "LinkType": "comeet",
+        "Unique Identifier": "88.004"
+    },
+    {
+        "Company": "personetics",
+        "LinkType": "comeet",
+        "Unique Identifier": "83.00A"
+    },
+    {
+        "Company": "fabric",
+        "LinkType": "comeet",
+        "Unique Identifier": "52.009"
+    },
+    {
+        "Company": "tictuk",
+        "LinkType": "comeet",
+        "Unique Identifier": "78.002"
+    },
+    {
+        "Company": "superplay",
+        "LinkType": "comeet",
+        "Unique Identifier": "28.003"
+    },
+    {
+        "Company": "zeronetworks",
+        "LinkType": "comeet",
+        "Unique Identifier": "39.00F"
+    },
+    {
+        "Company": "cycode",
+        "LinkType": "comeet",
+        "Unique Identifier": "A8.00D"
+    },
+    {
+        "Company": "365scores",
+        "LinkType": "comeet",
+        "Unique Identifier": "B3.006"
+    },
+    {
+        "Company": "etoro",
+        "LinkType": "comeet",
+        "Unique Identifier": "41.009"
+    },
+    {
+        "Company": "drivenets",
+        "LinkType": "comeet",
+        "Unique Identifier": "72.006"
+    },
+    {
+        "Company": "daisy",
+        "LinkType": "comeet",
+        "Unique Identifier": "67.002"
+    },
+    {
+        "Company": "risecodes",
+        "LinkType": "comeet",
+        "Unique Identifier": "A9.000"
+    },
+    {
+        "Company": "eitanmedical",
+        "LinkType": "comeet",
+        "Unique Identifier": "C6.00F"
+    },
+    {
+        "Company": "nominal",
+        "LinkType": "comeet",
+        "Unique Identifier": "E8.003"
+    },
+    {
+        "Company": "aquasec",
+        "LinkType": "comeet",
+        "Unique Identifier": "91.001"
+    },
+    {
+        "Company": "ceva",
+        "LinkType": "comeet",
+        "Unique Identifier": "76.005"
+    },
+    {
+        "Company": "augmedics",
+        "LinkType": "comeet",
+        "Unique Identifier": "26.00C"
+    },
+    {
+        "Company": "percepto",
+        "LinkType": "comeet",
+        "Unique Identifier": "44.000"
+    },
+    {
+        "Company": "riverside-fm",
+        "LinkType": "comeet",
+        "Unique Identifier": "66.009"
+    },
+    {
+        "Company": "toka",
+        "LinkType": "comeet",
+        "Unique Identifier": "46.00D"
+    },
+    {
+        "Company": "justt",
+        "LinkType": "comeet",
+        "Unique Identifier": "36.001"
+    },
+    {
+        "Company": "weski",
+        "LinkType": "comeet",
+        "Unique Identifier": "F8.00C"
+    },
+    {
+        "Company": "netafim",
+        "LinkType": "comeet",
+        "Unique Identifier": "B7.002"
+    },
+    {
+        "Company": "altair-semi",
+        "LinkType": "comeet",
+        "Unique Identifier": "88.003"
+    },
+    {
+        "Company": "deepinstinct",
+        "LinkType": "comeet",
+        "Unique Identifier": "72.00A"
+    },
+    {
+        "Company": "guardio",
+        "LinkType": "comeet",
+        "Unique Identifier": "57.000"
+    },
+    {
+        "Company": "retym",
+        "LinkType": "comeet",
+        "Unique Identifier": "C6.003"
+    },
+    {
+        "Company": "thrivedx",
+        "LinkType": "comeet",
+        "Unique Identifier": "A7.009"
+    },
+    {
+        "Company": "h2pro",
+        "LinkType": "comeet",
+        "Unique Identifier": "A7.001"
+    },
+    {
+        "Company": "Bookaway",
+        "LinkType": "comeet",
+        "Unique Identifier": "64.006"
+    },
+    {
+        "Company": "windward",
+        "LinkType": "comeet",
+        "Unique Identifier": "31.002"
+    },
+    {
+        "Company": "legitsecurity.com",
+        "LinkType": "comeet",
+        "Unique Identifier": "37.004"
+    },
+    {
+        "Company": "mdclone",
+        "LinkType": "comeet",
+        "Unique Identifier": "66.004"
+    },
+    {
+        "Company": "Orpak",
+        "LinkType": "comeet",
+        "Unique Identifier": "65.001"
+    },
+    {
+        "Company": "wiliot",
+        "LinkType": "comeet",
+        "Unique Identifier": "F6.003"
+    },
+    {
+        "Company": "aka_food",
+        "LinkType": "comeet",
+        "Unique Identifier": "79.00D"
+    },
+    {
+        "Company": "storemaven",
+        "LinkType": "comeet",
+        "Unique Identifier": "45.00F"
+    },
+    {
+        "Company": "docontrol",
+        "LinkType": "comeet",
+        "Unique Identifier": "07.003"
+    },
+    {
+        "Company": "birdaero",
+        "LinkType": "comeet",
+        "Unique Identifier": "97.006"
+    },
+    {
+        "Company": "vectoriousmedtech",
+        "LinkType": "comeet",
+        "Unique Identifier": "68.003"
+    },
+    {
+        "Company": "brandshield",
+        "LinkType": "comeet",
+        "Unique Identifier": "13.002"
+    },
+    {
+        "Company": "locusview",
+        "LinkType": "comeet",
+        "Unique Identifier": "25.002"
+    },
+    {
+        "Company": "rapyd",
+        "LinkType": "comeet",
+        "Unique Identifier": "73.00E"
+    },
+    {
+        "Company": "syqe",
+        "LinkType": "comeet",
+        "Unique Identifier": "F1.00C"
+    },
+    {
+        "Company": "holisto",
+        "LinkType": "comeet",
+        "Unique Identifier": "76.001"
+    },
+    {
+        "Company": "tastewise",
+        "LinkType": "comeet",
+        "Unique Identifier": "F8.000"
+    },
+    {
+        "Company": "gett",
+        "LinkType": "comeet",
+        "Unique Identifier": "A0.002"
+    },
+    {
+        "Company": "checkmarx",
+        "LinkType": "comeet",
+        "Unique Identifier": "C0.008"
+    },
+    {
+        "Company": "start.io",
+        "LinkType": "comeet",
+        "Unique Identifier": "B2.004"
+    },
+    {
+        "Company": "prismaphotonics",
+        "LinkType": "comeet",
+        "Unique Identifier": "18.00C"
+    },
+    {
+        "Company": "trigo",
+        "LinkType": "comeet",
+        "Unique Identifier": "A6.005"
+    },
+    {
+        "Company": "massivit",
+        "LinkType": "comeet",
+        "Unique Identifier": "39.007"
+    },
+    {
+        "Company": "gk8bygalaxy",
+        "LinkType": "comeet",
+        "Unique Identifier": "E8.000"
+    },
+    {
+        "Company": "coro",
+        "LinkType": "comeet",
+        "Unique Identifier": "08.00A"
+    },
+    {
+        "Company": "Ceragon",
+        "LinkType": "comeet",
+        "Unique Identifier": "D3.003"
+    },
+    {
+        "Company": "gilat",
+        "LinkType": "comeet",
+        "Unique Identifier": "39.005"
+    },
+    {
+        "Company": "gigaspaces",
+        "LinkType": "comeet",
+        "Unique Identifier": "C5.00E"
+    },
+    {
+        "Company": "comunix",
+        "LinkType": "comeet",
+        "Unique Identifier": "86.006"
+    },
+    {
+        "Company": "enercon",
+        "LinkType": "comeet",
+        "Unique Identifier": "A4.00D"
+    },
+    {
+        "Company": "panaya",
+        "LinkType": "comeet",
+        "Unique Identifier": "61.00C"
+    },
+    {
+        "Company": "anchorfintech",
+        "LinkType": "comeet",
+        "Unique Identifier": "87.00D "
+    },
+    {
+        "Company": "exco",
+        "LinkType": "comeet",
+        "Unique Identifier": "F0.005"
+    },
+    {
+        "Company": "kmslh",
+        "LinkType": "comeet",
+        "Unique Identifier": "97.008"
+    },
+    {
+        "Company": "shift4",
+        "LinkType": "green"
+    },
+    {
+        "Company": "forter",
+        "LinkType": "green"
+    },
+    {
+        "Company": "fivver",
+        "LinkType": "comeet",
+        "Unique Identifier": "60.002"
+    },
+    {
+        "Company": "nuvoton",
+        "LinkType": "comeet",
+        "Unique Identifier": "51.00F"
+    },
+    {
+        "Company": "genies",
+        "LinkType": "green"
+    },
+    {
+        "Company": "ourcrowd",
+        "LinkType": "comeet",
+        "Unique Identifier": "D3.00A"
+    },
+    {
+        "Company": "palantir",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "Kayhut",
+        "LinkType": "comeet",
+        "Unique Identifier": "F0.00B"
+    },
+    {
+        "Company": "monday",
+        "LinkType": "comeet",
+        "Unique Identifier": "41.00B"
+    },
+    {
+        "Company": "morphisec",
+        "LinkType": "comeet",
+        "Unique Identifier": "65.00C"
+    },
+    {
+        "Company": "Dario.Health",
+        "LinkType": "comeet",
+        "Unique Identifier": "34.006"
+    },
+    {
+        "Company": "Elementor",
+        "LinkType": "comeet",
+        "Unique Identifier": "A3.00F"
+    },
+    {
+        "Company": "ryzebeyond",
+        "LinkType": "comeet",
+        "Unique Identifier": "37.006"
+    },
+    {
+        "Company": "appsforce",
+        "LinkType": "comeet",
+        "Unique Identifier": "09.00C"
+    },
+    {
+        "Company": "allot",
+        "LinkType": "comeet",
+        "Unique Identifier": "C4.009"
+    },
+    {
+        "Company": "cheq",
+        "LinkType": "comeet",
+        "Unique Identifier": "65.005"
+    },
+    {
+        "Company": "port",
+        "LinkType": "comeet",
+        "Unique Identifier": "59.004"
+    },
+    {
+        "Company": "tabnine",
+        "LinkType": "comeet",
+        "Unique Identifier": "39.006"
+    },
+    {
+        "Company": "darrow-ai",
+        "LinkType": "comeet",
+        "Unique Identifier": "D8.000"
+    },
+    {
+        "Company": "mongodb",
+        "LinkType": "green"
+    },
+    {
+        "Company": "stampli",
+        "LinkType": "comeet",
+        "Unique Identifier": "F6.007"
+    },
+    {
+        "Company": "bluesnap",
+        "LinkType": "comeet",
+        "Unique Identifier": "73.002"
+    },
+    {
+        "Company": "datadog",
+        "LinkType": "green"
+    },
+    {
+        "Company": "moovit",
+        "LinkType": "comeet",
+        "Unique Identifier": "63.007"
+    },
+    {
+        "Company": "vCita",
+        "LinkType": "comeet",
+        "Unique Identifier": "83.002"
+    },
+    {
+        "Company": "hexagon",
+        "LinkType": "comeet",
+        "Unique Identifier": "62.00E"
+    },
+    {
+        "Company": "Apple",
+        "LinkType": "apple"
+    },
+    {
+        "Company": "Amazon",
+        "LinkType": "amazon"
+    },
+    {
+        "Company": "Google",
+        "LinkType": "google"
+    },
+    {
+        "Company": "Meta",
+        "LinkType": "meta"
+    },
+    {
+        "Company": "tango",
+        "LinkType": "comeet",
+        "Unique Identifier": "B7.007"
+    },
+    {
+        "Company": "skai",
+        "LinkType": "comeet",
+        "Unique Identifier": "22.00A"
+    },
+    {
+        "Company": "8fig",
+        "LinkType": "comeet",
+        "Unique Identifier": "08.004"
+    },
+    {
+        "Company": "finubit",
+        "LinkType": "comeet",
+        "Unique Identifier": "A9.002"
+    },
+    {
+        "Company": "lightico",
+        "LinkType": "comeet",
+        "Unique Identifier": "94.00D"
+    },
+    {
+        "Company": "xmcyber",
+        "LinkType": "comeet",
+        "Unique Identifier": "15.005"
+    },
+    {
+        "Company": "april",
+        "LinkType": "green"
+    },
+    {
+        "Company": "fire-arc",
+        "LinkType": "comeet",
+        "Unique Identifier": "18.009"
+    },
+    {
+        "Company": "tandemG",
+        "LinkType": "comeet",
+        "Unique Identifier": "92.00D"
+    },
+    {
+        "Company": "evinced",
+        "LinkType": "comeet",
+        "Unique Identifier": "28.000"
+    },
+    {
+        "Company": "sunbit",
+        "LinkType": "comeet",
+        "Unique Identifier": "37.001"
+    },
+    {
+        "Company": "forsightrobotics",
+        "LinkType": "comeet",
+        "Unique Identifier": "E9.008"
+    },
+    {
+        "Company": "lightricks",
+        "LinkType": "green"
+    },
+    {
+        "Company": "spinomenal",
+        "LinkType": "comeet",
+        "Unique Identifier": "99.008"
+    },
+    {
+        "Company": "Dynatrace",
+        "LinkType": "smart"
+    },
+    {
+        "Company": "nanox",
+        "LinkType": "comeet",
+        "Unique Identifier": "43.00f"
+    },
+    {
+        "Company": "bluewhite",
+        "LinkType": "comeet",
+        "Unique Identifier": "D5.00D"
+    },
+    {
+        "Company": "incredibuild",
+        "LinkType": "comeet",
+        "Unique Identifier": "66.00F"
+    },
+    {
+        "Company": "layerxsecurity",
+        "LinkType": "comeet",
+        "Unique Identifier": "F9.00D"
+    },
+    {
+        "Company": "commbox",
+        "LinkType": "comeet",
+        "Unique Identifier": "0A.001"
+    },
+    {
+        "Company": "terasky",
+        "LinkType": "comeet",
+        "Unique Identifier": "b7.009"
+    },
+    {
+        "Company": "explorium",
+        "LinkType": "comeet",
+        "Unique Identifier": "B4.00E"
+    },
+    {
+        "Company": "simply",
+        "LinkType": "green"
+    },
+    {
+        "Company": "tufin",
+        "LinkType": "comeet",
+        "Unique Identifier": "A1.00B"
+    },
+    {
+        "Company": "proteantecs",
+        "LinkType": "comeet",
+        "Unique Identifier": "D5.00E"
+    },
+    {
+        "Company": "harmonic",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Imply",
+        "LinkType": "green"
+    },
+    {
+        "Company": "verbit",
+        "LinkType": "comeet",
+        "Unique Identifier": "C2.000"
+    },
+    {
+        "Company": "geoedge.com",
+        "LinkType": "comeet",
+        "Unique Identifier": "82.00A"
+    },
+    {
+        "Company": "guideline",
+        "LinkType": "comeet",
+        "Unique Identifier": "89.009"
+    },
+    {
+        "Company": "chainreaction",
+        "LinkType": "comeet",
+        "Unique Identifier": "A6.00D"
+    },
+    {
+        "Company": "scopiolabs",
+        "LinkType": "comeet",
+        "Unique Identifier": "87.00C"
+    },
+    {
+        "Company": "Explorium",
+        "LinkType": "comeet",
+        "Unique Identifier": "B4.00E"
+    },
+    {
+        "Company": "Locusview",
+        "LinkType": "comeet",
+        "Unique Identifier": "25.002"
+    },
+    {
+        "Company": "cymulate",
+        "LinkType": "green"
+    },
+    {
+        "Company": "commit",
+        "LinkType": "comeet",
+        "Unique Identifier": "76.008"
+    },
+    {
+        "Company": "appdome",
+        "LinkType": "comeet",
+        "Unique Identifier": "E6.005"
+    },
+    {
+        "Company": "gusto",
+        "LinkType": "green"
+    },
+    {
+        "Company": "firebolt",
+        "Unique Identifier": "26.004",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "spotoncorporate",
+        "LinkType": "green"
+    },
+    {
+        "Company": "coralogix",
+        "Unique Identifier": "06.004",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "betterhelpcom",
+        "LinkType": "green"
+    },
+    {
+        "Company": "eko",
+        "LinkType": "green"
+    },
+    {
+        "Company": "tenableinc",
+        "LinkType": "green"
+    },
+    {
+        "Company": "nymhealth",
+        "Unique Identifier": "46.005",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "earnix",
+        "Unique Identifier": "93.00B",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "panorays",
+        "Unique Identifier": "97.00D",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "overwolf",
+        "Unique Identifier": "B1.001",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "guesty",
+        "Unique Identifier": "10.000",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "thetaray",
+        "Unique Identifier": "72.00F",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "optibus",
+        "Unique Identifier": "D1.00C",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "silverfort",
+        "Unique Identifier": "54.007",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "scylladb",
+        "Unique Identifier": "E4.006",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "global-e",
+        "Unique Identifier": "62.002",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "immunai",
+        "Unique Identifier": "37.009",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "tomorrow",
+        "LinkType": "green"
+    },
+    {
+        "Company": "papayaglobal",
+        "Unique Identifier": "16.005",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "arbe",
+        "Unique Identifier": "C6.001",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "naturalint",
+        "Unique Identifier": "71.001",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "brightdata",
+        "Unique Identifier": "88.007",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "datarails",
+        "Unique Identifier": "53.005",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "riskified",
+        "LinkType": "green"
+    },
+    {
+        "Company": "metadata",
+        "LinkType": "green"
+    },
+    {
+        "Company": "nexxen",
+        "LinkType": "green"
+    },
+    {
+        "Company": "chargeafter",
+        "Unique Identifier": "C5.004",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "envoy",
+        "LinkType": "green"
+    },
+    {
+        "Company": "finout",
+        "Unique Identifier": "07.006",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "minutemedia",
+        "Unique Identifier": "45.00A",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "biocatch",
+        "Unique Identifier": "03.00E",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "imagen-ai",
+        "Unique Identifier": "78.00F",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "ironscales",
+        "Unique Identifier": "1A.007",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "nascompany",
+        "LinkType": "green"
+    },
+    {
+        "Company": "hailo",
+        "Unique Identifier": "D5.007",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "starkware",
+        "Unique Identifier": "C6.00E",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "zengo",
+        "Unique Identifier": "18.00D",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "kaltura",
+        "Unique Identifier": "E2.00D",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "intuitionrobotics",
+        "Unique Identifier": "B3.00B",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "cycognito",
+        "Unique Identifier": "14.00A",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "quantummachines",
+        "Unique Identifier": "D6.000",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "tailorbrands",
+        "Unique Identifier": "94.009",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "bizzabo",
+        "Unique Identifier": "A5.000",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "syte",
+        "Unique Identifier": "74.002",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "mend",
+        "Unique Identifier": "83.000",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "hippo70",
+        "LinkType": "green"
+    },
+    {
+        "Company": "plaxidityx",
+        "Unique Identifier": "A7.004",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "pentera",
+        "Unique Identifier": "C5.00D",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "curve",
+        "Unique Identifier": "E4.001",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "bigabid",
+        "Unique Identifier": "A4.003",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "sundaysky",
+        "Unique Identifier": "71.000",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "growthspace",
+        "Unique Identifier": "D7.00A",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "bluevineus",
+        "LinkType": "green"
+    },
+    {
+        "Company": "cymbio",
+        "Unique Identifier": "96.00F",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "silk",
+        "Unique Identifier": "F6.00C",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "taranis",
+        "Unique Identifier": "34.003",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "ai21",
+        "Unique Identifier": "E6.001",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "anyword",
+        "Unique Identifier": "30.00B",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "atidot",
+        "Unique Identifier": "08.001",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "visby",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "venncity",
+        "LinkType": "green"
+    },
+    {
+        "Company": "flytrex",
+        "Unique Identifier": "77.003",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "xtend",
+        "Unique Identifier": "85.00A",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "karambasecurity",
+        "Unique Identifier": "D7.00D",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "root",
+        "LinkType": "green"
+    },
+    {
+        "Company": "edgybees",
+        "Unique Identifier": "95.000",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "easysend",
+        "Unique Identifier": "D5.009",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "pliops",
+        "Unique Identifier": "05.004",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "promo",
+        "Unique Identifier": "73.00F",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "streamsecurity",
+        "Unique Identifier": "39.008",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "everc",
+        "Unique Identifier": "C9.003",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "zencity",
+        "Unique Identifier": "56.00B",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "konnecto",
+        "Unique Identifier": "36.00C",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "autotalks",
+        "Unique Identifier": "03.009",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "healthy",
+        "Unique Identifier": "B4.004",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "lendbuzz",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "houzz",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "benchsci",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "humansecurity",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "flowlife",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "kariusdx",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "digitalturbine",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "aurora-dev",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "identiq",
+        "Unique Identifier": "56.003",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "sysaid",
+        "Unique Identifier": "43.00a",
+        "LinkType": "comeet"
+    },
+    {
+        "Company": "4Manalytics",
+        "LinkType": "comeet",
+        "Unique Identifier": "B6.00F "
+    },
+    {
+        "Company": "ABInBev",
+        "LinkType": "comeet",
+        "Unique Identifier": "54.004 "
+    },
+    {
+        "Company": "beamr",
+        "LinkType": "comeet",
+        "Unique Identifier": "A9.00B "
+    },
+    {
+        "Company": "contentsquare",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "cyera",
+        "LinkType": "comeet",
+        "Unique Identifier": "17.008 "
+    },
+    {
+        "Company": "flare",
+        "LinkType": "comeet",
+        "Unique Identifier": "36.00F "
+    },
+    {
+        "Company": "inmanage",
+        "LinkType": "comeet",
+        "Unique Identifier": "B7.006 "
+    },
+    {
+        "Company": "leadspace",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "liquiditygroup",
+        "LinkType": "comeet",
+        "Unique Identifier": "77.00A"
+    },
+    {
+        "Company": "lumus",
+        "LinkType": "comeet",
+        "Unique Identifier": "62.00F "
+    },
+    {
+        "Company": "saymine",
+        "LinkType": "comeet",
+        "Unique Identifier": "39.003 "
+    },
+    {
+        "Company": "pandologic1",
+        "LinkType": "green"
+    },
+    {
+        "Company": "penumbrainc",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "reeco",
+        "LinkType": "comeet",
+        "Unique Identifier": "0A.00D "
+    },
+    {
+        "Company": "scadafence",
+        "LinkType": "comeet",
+        "Unique Identifier": "43.00E "
+    },
+    {
+        "Company": "statement",
+        "LinkType": "comeet",
+        "Unique Identifier": "18.00F "
+    },
+    {
+        "Company": "triplewhale",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "twingate",
+        "LinkType": "lever"
+    },
+    {
+        "Company": "vesttoo",
+        "LinkType": "comeet",
+        "Unique Identifier": "C7.001 "
+    },
+    {
+        "Company": "vhive",
+        "LinkType": "comeet",
+        "Unique Identifier": "08.002 "
+    },
+    {
+        "Company": "wishi",
+        "LinkType": "green"
+    },
+    {
+        "Company": "sentra",
+        "LinkType": "comeet",
+        "Unique Identifier": "87.00B"
+    },
+    {
+        "Company": "frontegg",
+        "LinkType": "comeet",
+        "Unique Identifier": "77.009"
+    },
+    {
+        "Company": "dotcompliance",
+        "LinkType": "comeet",
+        "Unique Identifier": "89.00D"
+    },
+    {
+        "Company": "Oshi",
+        "LinkType": "comeet",
+        "Unique Identifier": "87.00F"
+    },
+    {
+        "Company": "Artlist",
+        "LinkType": "comeet",
+        "Unique Identifier": "85.003"
+    },
+    {
+        "Company": "hyperguest",
+        "LinkType": "comeet",
+        "Unique Identifier": "09.00B"
+    },
+    {
+        "Company": "scaleops",
+        "LinkType": "comeet",
+        "Unique Identifier": "99.003"
+    },
+    {
+        "Company": "/embed/job_board?for=jfrog",
+        "LinkType": "green"
+    },
+    {
+        "Company": "streamelements",
+        "LinkType": "green"
+    },
+    {
+        "Company": "algosec",
+        "LinkType": "comeet",
+        "Unique Identifier": "71.006"
+    },
+    {
+        "Company": "investing",
+        "LinkType": "comeet",
+        "Unique Identifier": "42.002"
+    },
+    {
+        "Company": "/embed/job_board?for=orcasecurity",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=connecteam",
+        "LinkType": "green"
+    },
+    {
+        "Company": "cyolo",
+        "LinkType": "comeet",
+        "Unique Identifier": "F5.005"
+    },
+    {
+        "Company": "nayax",
+        "LinkType": "comeet",
+        "Unique Identifier": "13.009"
+    },
+    {
+        "Company": "optival",
+        "LinkType": "comeet",
+        "Unique Identifier": "A5.008"
+    },
+    {
+        "Company": "aiola",
+        "LinkType": "comeet",
+        "Unique Identifier": "77.002"
+    },
+    {
+        "Company": "cyrebro",
+        "LinkType": "comeet",
+        "Unique Identifier": "A7.003"
+    },
+    {
+        "Company": "codevalue",
+        "LinkType": "comeet",
+        "Unique Identifier": "81.009"
+    },
+    {
+        "Company": "/embed/job_board?for=Vizai",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=duda",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=sisense",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=fireblocks",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=topstartups.io",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=transmitsecurity",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=mixtiles",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=payoneer",
+        "LinkType": "green"
+    },
+    {
+        "Company": "scodix",
+        "LinkType": "comeet",
+        "Unique Identifier": "77.00D"
+    },
+    {
+        "Company": "otorio",
+        "LinkType": "comeet",
+        "Unique Identifier": "E3.003"
+    },
+    {
+        "Company": "crazylabs",
+        "LinkType": "comeet",
+        "Unique Identifier": "32.00E"
+    },
+    {
+        "Company": "kornit",
+        "LinkType": "comeet",
+        "Unique Identifier": "11.00F"
+    },
+    {
+        "Company": "redis",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=toriihq",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=zoominfo",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=tipaltisolutions",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=snappy",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=yotpo",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=sentinellabs",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=augury",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=TripActions",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=capitolis",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=taboola",
+        "LinkType": "green"
+    },
+    {
+        "Company": "freightos",
+        "LinkType": "comeet",
+        "Unique Identifier": "F0.000"
+    },
+    {
+        "Company": "Madlan",
+        "LinkType": "comeet",
+        "Unique Identifier": "33.00F"
+    },
+    {
+        "Company": "feedvisor",
+        "LinkType": "comeet",
+        "Unique Identifier": "11.00A"
+    },
+    {
+        "Company": "uveye",
+        "LinkType": "comeet",
+        "Unique Identifier": "92.00F"
+    },
+    {
+        "Company": "zemingo",
+        "LinkType": "comeet",
+        "Unique Identifier": "80.005"
+    },
+    {
+        "Company": "allcloud",
+        "LinkType": "comeet",
+        "Unique Identifier": "71.008"
+    },
+    {
+        "Company": "mindspace",
+        "LinkType": "comeet",
+        "Unique Identifier": "71.00B"
+    },
+    {
+        "Company": "/embed/job_board?for=axonius",
+        "LinkType": "green"
+    },
+    {
+        "Company": "/embed/job_board?for=wekatest",
+        "LinkType": "green"
+    },
+    {
+        "Company": "supercom",
+        "LinkType": "comeet",
+        "Unique Identifier": "46.00A"
+    },
+    {
+        "Company": "solitics",
+        "LinkType": "bamboohr"
+    },
+    {
+        "Company": "rapaport",
+        "LinkType": "bamboohr"
+    },
+    {
+        "Company": "railvision",
+        "LinkType": "comeet",
+        "Unique Identifier": "84.000"
+    },
+    {
+        "Company": "alison",
+        "LinkType": "comeet",
+        "Unique Identifier": "A9.00D"
+    },
+    {
+        "Company": "withfaye",
+        "LinkType": "comeet",
+        "Unique Identifier": "87.00a"
+    },
+    {
+        "Company": "hyro",
+        "LinkType": "comeet",
+        "Unique Identifier": "B9.00A"
+    },
+    {
+        "Company": "zenity",
+        "LinkType": "comeet",
+        "Unique Identifier": "19.000"
+    },
+    {
+        "Company": "dreamgroup",
+        "LinkType": "comeet",
+        "Unique Identifier": "99.002"
+    },
+    {
+        "Company": "finbounce",
+        "LinkType": "comeet",
+        "Unique Identifier": "E9.00C"
+    },
+    {
+        "Company": "sensi",
+        "LinkType": "comeet",
+        "Unique Identifier": "E7.00F"
+    },
+    {
+        "Company": "loox",
+        "LinkType": "comeet",
+        "Unique Identifier": "77.00E"
+    },
+    {
+        "Company": "triplewhale",
+        "LinkType": "green"
+    },
+    {
+        "Company": "aradtec",
+        "LinkType": "comeet",
+        "Unique Identifier": "48.00e"
+    },
+    {
+        "Company": "deloitte",
+        "LinkType": "comeet",
+        "Unique Identifier": "F7.00B"
+    },
+    {
+        "Company": "qspark",
+        "LinkType": "comeet",
+        "Unique Identifier": "98.001"
+    },
+    {
+        "Company": "gini-apps",
+        "LinkType": "comeet",
+        "Unique Identifier": "66.000"
+    },
+    {
+        "Company": "youappi",
+        "LinkType": "comeet",
+        "Unique Identifier": "C9.00B"
+    },
+    {
+        "Company": "teads1",
+        "LinkType": "green"
+    },
+    {
+        "Company": "mccann",
+        "LinkType": "comeet",
+        "Unique Identifier": "33.00C"
+    },
+    {
+        "Company": "elsight",
+        "LinkType": "comeet",
+        "Unique Identifier": "B9.006"
+    },
+    {
+        "Company": "hub-technologies",
+        "LinkType": "comeet",
+        "Unique Identifier": "07.00F"
+    },
+    {
+        "Company": "camtek",
+        "LinkType": "comeet",
+        "Unique Identifier": "F4.00D"
+    },
+    {
+        "Company": "play_perfect",
+        "LinkType": "comeet",
+        "Unique Identifier": "69.001"
+    },
+    {
+        "Company": "unframe",
+        "LinkType": "green"
+    },
+    {
+        "Company": "canopycare",
+        "LinkType": "green"
+    },
+    {
+        "Company": "trullion",
+        "LinkType": "comeet",
+        "Unique Identifier": "07.000"
+    },
+    {
+        "Company": "PingIdentity",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Imagry",
+        "LinkType": "comeet",
+        "Unique Identifier": "B7.00F"
+    },
+    {
+        "Company": "pipl",
+        "LinkType": "comeet",
+        "Unique Identifier": "22.008"
+    },
+    {
+        "Company": "Capitolis",
+        "LinkType": "green"
+    },
+    {
+        "Company": "noma_security",
+        "LinkType": "comeet",
+        "Unique Identifier": "3A.005"
+    },
+    {
+        "Company": "astrix_security",
+        "LinkType": "comeet",
+        "Unique Identifier": "09.009"
+    },
+    {
+        "Company": "factify",
+        "LinkType": "comeet",
+        "Unique Identifier": "A9.00F"
+    },
+    {
+        "Company": "kueez",
+        "LinkType": "comeet",
+        "Unique Identifier": "09.008"
+    },
+    {
+        "Company": "au10tix",
+        "LinkType": "comeet",
+        "Unique Identifier": "3A.00C"
+    },
+    {
+        "Company": "pikoya",
+        "LinkType": "comeet",
+        "Unique Identifier": "76.002"
+    },
+    {
+        "Company": "Pango",
+        "LinkType": "comeet",
+        "Unique Identifier": "59.002"
+    },
+    {
+        "Company": "r2net",
+        "LinkType": "bamboohr"
+    },
+    {
+        "Company": "splitit",
+        "LinkType": "bamboohr"
+    },
+    {
+        "Company": "Veritone",
+        "LinkType": "green"
+    },
+    {
+        "Company": "israaid",
+        "LinkType": "bamboohr"
+    },
+    {
+        "Company": "PI-Cardia",
+        "LinkType": "comeet",
+        "Unique Identifier": "A5.00B"
+    },
+    {
+        "Company": "operative",
+        "LinkType": "bamboohr"
+    },
+    {
+        "Company": "mentee_robotics",
+        "LinkType": "comeet",
+        "Unique Identifier": "6A.002"
+    },
+    {
+        "Company": "sunflower",
+        "LinkType": "comeet",
+        "Unique Identifier": "AA.009"
+    },
+    {
+        "Company": "infinipoint",
+        "LinkType": "bamboohr"
+    },
+    {
+        "Company": "valohealth",
+        "LinkType": "green"
+    },
+    {
+        "Company": "PayEm",
+        "LinkType": "comeet",
+        "Unique Identifier": "17.007"
+    },
+    {
+        "Company": "gitlab",
+        "LinkType": "green"
+    },
+    {
+        "Company": "arbitrip",
+        "LinkType": "comeet",
+        "Unique Identifier": "BA.007"
+    },
+    {
+        "Company": "autods",
+        "LinkType": "green"
+    },
+    {
+        "Company": "gleanwork",
+        "LinkType": "green"
+    },
+    {
+        "Company": "addressable_io",
+        "LinkType": "comeet",
+        "Unique Identifier": "8A.00C"
+    },
+    {
+        "Company": "alice",
+        "LinkType": "comeet",
+        "Unique Identifier": "D5.005"
+    },
+    {
+        "Company": "arbe",
+        "LinkType": "comeet",
+        "Unique Identifier": "C6.001"
+    },
+    {
+        "Company": "backslash",
+        "LinkType": "comeet",
+        "Unique Identifier": "98.004"
+    },
+    {
+        "Company": "blockaid",
+        "LinkType": "comeet",
+        "Unique Identifier": "69.00B"
+    },
+    {
+        "Company": "fireblocks",
+        "LinkType": "green"
+    },
+    {
+        "Company": "taboola",
+        "LinkType": "green"
+    },
+    {
+        "Company": "transmitsecurity",
+        "LinkType": "green"
+    },
+    {
+        "Company": "payoneer",
+        "LinkType": "green"
+    },
+    {
+        "Company": "cybereason",
+        "LinkType": "green"
+    },
+    {
+        "Company": "orcasecurity",
+        "LinkType": "green"
+    },
+    {
+        "Company": "wizinc",
+        "LinkType": "green",
+        "OtherName": "Wiz"
+    },
+    {
+        "Company": "tipaltisolutions",
+        "LinkType": "green",
+        "OtherName": "Tipalti"
+    },
+    {
+        "Company": "jfrog",
+        "LinkType": "green"
+    },
+    {
+        "Company": "nextinsurance66",
+        "LinkType": "green",
+        "OtherName": "Next Insurance"
+    },
+    {
+        "Company": "Axonius",
+        "LinkType": "green"
+    },
+    {
+        "Company": "via",
+        "LinkType": "green"
+    },
+    {
+        "Company": "sisense",
+        "LinkType": "green"
+    },
+    {
+        "Company": "duda",
+        "LinkType": "green"
+    },
+    {
+        "Company": "connecteam",
+        "LinkType": "green"
+    },
+    {
+        "Company": "Vizai",
+        "LinkType": "green"
+    },
+    {
+        "Company": "mixtiles",
+        "LinkType": "green"
+    },
+    {
+        "Company": "toriihq",
+        "LinkType": "green"
+    },
+    {
+        "Company": "zoominfo",
+        "LinkType": "green"
+    },
+    {
+        "Company": "snappy",
+        "LinkType": "green"
+    },
+    {
+        "Company": "yotpo",
+        "LinkType": "green"
+    },
+    {
+        "Company": "sentinellabs",
+        "LinkType": "green",
+        "OtherName": "SentinelOne"
+    },
+    {
+        "Company": "augury",
+        "LinkType": "green"
+    },
+    {
+        "Company": "TripActions",
+        "LinkType": "green",
+        "OtherName": "Navan"
+    },
+    {
+        "Company": "capitolis",
+        "LinkType": "green"
+    },
+    {
+        "Company": "wekatest",
+        "LinkType": "green",
+        "OtherName": "WEKA"
+    }
+]

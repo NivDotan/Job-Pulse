@@ -1,0 +1,49 @@
+name: Mirror to Public Repo
+
+on:
+  push:
+    branches: [production]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # fetch-depth: 1 (default) — current state only, no old history
+
+      - name: Mirror clean snapshot to public repo
+        env:
+          PUBLIC_REPO_PAT: ${{ secrets.PUBLIC_REPO_PAT }}
+          PUBLIC_REPO: NivDotan/Job-Pulse
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          COMMIT_MSG=$(git log -1 --format="%s")
+
+          # Clone the public repo (or init if empty)
+          git clone --depth 1 \
+            https://x-access-token:${PUBLIC_REPO_PAT}@github.com/${PUBLIC_REPO}.git \
+            /tmp/public-repo 2>/dev/null \
+          || {
+            mkdir -p /tmp/public-repo
+            cd /tmp/public-repo
+            git init
+            git checkout -b main
+            git remote add origin \
+              https://x-access-token:${PUBLIC_REPO_PAT}@github.com/${PUBLIC_REPO}.git
+          }
+
+          cd /tmp/public-repo
+
+          # Replace all files with current production state
+          git rm -rf . --quiet 2>/dev/null || true
+          rsync -a --exclude='.git' $GITHUB_WORKSPACE/ .
+
+          git add -A
+
+          # Skip commit if nothing changed
+          git diff --cached --quiet && echo "No changes to mirror." && exit 0
+
+          git commit -m "$COMMIT_MSG"
+          git push origin main

@@ -1,0 +1,12 @@
+.env
+.env.example
+__pycache__/
+*.pyc
+*.log
+Scrapers/logs/
+Scrapers/.env
+Scrapers/.env.example
+Scrapers/tmp/company_discovery_search_cache.json
+.python-version
+deduplicated_links_for_bot_unclean.json
+deduplicated_links_for_bot.json

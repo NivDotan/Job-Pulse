@@ -1,0 +1,10 @@
+flask==3.0.0
+python-dotenv==1.0.0
+supabase>=2.9.0
+httpx>=0.26.0
+beautifulsoup4
+requests
+pandas
+numpy
+groq
+duckduckgo-search>=6.0.0,<8.0.0
