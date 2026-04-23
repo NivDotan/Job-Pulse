@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import json
 import subprocess
 from datetime import datetime, date
+from zoneinfo import ZoneInfo
 import supabase
 from os.path import join, dirname
 import pandas as pd
@@ -16,6 +17,8 @@ import requests
 from bs4 import BeautifulSoup
 import html
 import local_llm_function
+
+ISRAEL_TZ = ZoneInfo("Asia/Jerusalem")
 
 load_dotenv()
 
@@ -258,6 +261,98 @@ def save_emailed_jobs_to_supabase(jobs_list: list[dict]) -> Optional[Any]:
     except Exception as e:
         print(f"Error saving emailed jobs to Supabase: {e}")
         return None
+
+# ── US jobs (non-Israel) ────────────────────────────────────────────────────
+
+def is_us_digest_time() -> bool:
+    """True when Israel clock is 20:00–23:59 — the daily US-jobs digest window."""
+    return datetime.now(ISRAEL_TZ).hour >= 20
+
+
+def save_us_jobs_to_supabase(jobs: list[dict]) -> None:
+    """Upsert non-Israeli jobs into us_jobs_history (one row per link per day)."""
+    if not jobs:
+        return
+    today = date.today().isoformat()
+    records = [
+        {"title": j["title"], "company": j["company"], "city": j["city"],
+         "link": j["link"], "email_date": today}
+        for j in jobs
+    ]
+    try:
+        conn = get_supabase_connection()
+        conn.table("us_jobs_history").upsert(records, on_conflict="link,email_date").execute()
+        print(f"Saved {len(records)} US jobs to us_jobs_history")
+    except Exception as e:
+        print(f"Error saving US jobs to Supabase: {e}")
+
+
+def send_us_jobs_digest() -> None:
+    """Fetch today's unemailes US jobs and send a nightly digest email."""
+    today = date.today().isoformat()
+    try:
+        conn = get_supabase_connection()
+        resp = (
+            conn.table("us_jobs_history")
+            .select("*")
+            .eq("email_date", today)
+            .is_("emailed_at", "null")
+            .execute()
+        )
+        jobs = resp.data or []
+    except Exception as e:
+        print(f"Error fetching US jobs for digest: {e}")
+        return
+
+    if not jobs:
+        print("US digest: no new jobs to send today")
+        return
+
+    your_email = os.environ.get("Email_adddress", "")
+    your_password = os.environ.get("Email_password", "")
+    recipient_emails_str = os.environ.get("RECIPIENT_EMAILS", your_email)
+    recipient_emails = [e.strip() for e in recipient_emails_str.split(",") if e.strip()]
+
+    rows = "".join(
+        f"<tr><td>{j['company']}</td><td>{j['title']}</td><td>{j['city']}</td>"
+        f"<td><a href='{j['link']}'>View</a></td></tr>"
+        for j in jobs
+    )
+    body = f"""
+    <html><head><style>
+      table{{border-collapse:collapse;width:100%;font-family:Arial,sans-serif}}
+      th,td{{border:1px solid #ddd;padding:8px;text-align:left}}
+      th{{background:#f2f2f2}}
+    </style></head><body>
+    <h2>US Job Listings — {today}</h2>
+    <p>{len(jobs)} new positions found today outside Israel.</p>
+    <table>
+      <tr><th>Company</th><th>Job Title</th><th>City</th><th>Link</th></tr>
+      {rows}
+    </table>
+    </body></html>
+    """
+
+    msg = MIMEMultipart("alternative")
+    msg["From"] = your_email
+    msg["To"] = ", ".join(recipient_emails)
+    msg["Subject"] = f"US Jobs Digest — {today} ({len(jobs)} listings)"
+    msg.attach(MIMEText(body, "html"))
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(your_email, your_password)
+            server.sendmail(your_email, recipient_emails, msg.as_string())
+        print(f"US digest sent: {len(jobs)} jobs")
+
+        now = datetime.now().isoformat()
+        conn = get_supabase_connection()
+        for j in jobs:
+            conn.table("us_jobs_history").update({"emailed_at": now}).eq("id", j["id"]).execute()
+    except Exception as e:
+        print(f"Failed to send US digest: {e}")
+
 
 def filter_new_jobs(job_listings: list, sent_links: set[str]) -> list:
     """Filter out jobs that have already been sent (based on link)."""
@@ -774,18 +869,27 @@ def connect():
 
 def test(data_array):
     conn = connect()
-    #data_array =   [{'company': 'Artlist', 'job_name': 'Senior Frontend Developer', 'link': 'https://www.comeet.com/jobs/artlist/85.003/senior-frontend-developer/53.05E', 'city_y': 'Tel Aviv-Yafo'}, {'company': 'DealHub', 'job_name': 'Customer Support Specialist', 'link': 'https://www.comeet.com/jobs/dealhub/86.005/customer-support-specialist/EE.A5C', 'city_y': 'Manila'}, {'company': 'NICE', 'job_name': 'Implementation - Professional Services Engineer', 'link': 'https://boards.eu.greenhouse.io/nice/jobs/4588961101?gh_jid=4588961101', 'city_y': 'Philippines - Manila'}, {'company': 'Zoominfo', 'job_name': 'Senior Contracts Administrator', 'link': 'https://www.zoominfo.com/careers?gh_jid=8116036002', 'city_y': 'Chennai'}, {'company': 'arbe', 'job_name': 'Embedded SW Engineer', 'link': 'https://www.comeet.com/jobs/arbe/C6.001/embedded-sw-engineer/ED.A56', 'city_y': 'Tel Aviv-Yafo'}, 
-    #                {'company': 'windward', 'job_name': 'AI Content Marketing', 'link': 'https://www.comeet.com/jobs/windward/31.002/ai-content-marketing/B0.855', 'city_y': 'Tel Aviv-Yafo'}]  
     data_to_email = []
     data_to_email_not_for_students = []
     data_to_email_fallback = []  # Jobs that couldn't be processed by LLM but should still be sent
+    us_jobs_list = []            # Non-Israeli jobs — stored in DB, sent in nightly digest
     words_to_search = ["intern", "student","junior","entry","graduate","new grad","undergraduate"]
     tmpIndex = 1
-    
+
     for i in data_array:
         print(f"[{tmpIndex}/{len(data_array)}] Processing company: {i['company']}")
         tmpIndex+=1
         print(f"Company: {i['company']}, Job Name: {i['job_name']}, Link: {i['link']}")
+
+        # Non-Israeli jobs skip Groq and the immediate email — stored for nightly digest
+        if not is_location_in_israel(i.get("city_y", "")):
+            us_jobs_list.append({
+                "title": i["job_name"],
+                "company": i["company"],
+                "city": i.get("city_y", ""),
+                "link": i["link"],
+            })
+            continue
         
         job_processed = False  # Track if job was successfully classified
         reqs_desc = None
@@ -849,7 +953,11 @@ def test(data_array):
     if data_to_email_fallback:
         print(f"Adding {len(data_to_email_fallback)} unclassified jobs to email")
         data_to_email_not_for_students.extend(data_to_email_fallback)
-    
+
+    # Persist US (non-Israeli) jobs to DB for the nightly digest
+    save_us_jobs_to_supabase(us_jobs_list)
+    print(f"US jobs collected this run: {len(us_jobs_list)}")
+
     print("email: ", data_to_email, "data_to_email_not_for_students:", data_to_email_not_for_students)
 
     df_existing_Tal = get_existing_data_df("Tal_scrapers")

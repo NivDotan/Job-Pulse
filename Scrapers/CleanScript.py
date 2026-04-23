@@ -691,6 +691,16 @@ def run_scraper_once():
         except Exception as cleanup_err:
             logging.error(f"Error during log cleanup: {cleanup_err}")
 
+    # Send nightly US-jobs digest at 8 PM Israel time (only fires once per day
+    # because send_us_jobs_digest() marks rows as emailed after sending).
+    try:
+        from telegramInsertBot import is_us_digest_time, send_us_jobs_digest
+        if is_us_digest_time():
+            logging.info("US digest window reached — sending nightly US-jobs email")
+            send_us_jobs_digest()
+    except Exception as digest_err:
+        logging.warning(f"US digest failed (non-fatal): {digest_err}")
+
     # Run company discovery for whichever ATS is most overdue (one per cron tick).
     # State is tracked in the discovery_state table — no extra Render services needed.
     try:
