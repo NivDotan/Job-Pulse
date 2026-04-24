@@ -700,6 +700,65 @@ def get_data_from_comeet(url):
         return None
     
 
+def get_data_from_workday(url):
+    """Fetch and classify a Workday job posting via HTML/JSON-LD scraping."""
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        }
+        response = requests.get(url, headers=headers, timeout=20)
+        if response.status_code != 200:
+            print(f"  Workday page returned {response.status_code} for {url}")
+            return None
+
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # 1. Try JSON-LD (JobPosting schema — most structured)
+        for script in soup.find_all("script", {"type": "application/ld+json"}):
+            if not script.string:
+                continue
+            try:
+                data = json.loads(script.string)
+                if isinstance(data, list):
+                    data = next((d for d in data if d.get("@type") == "JobPosting"), None) or {}
+                description = data.get("description", "")
+                if description:
+                    clean_text = BeautifulSoup(html.unescape(description), "html.parser").get_text(separator="\n")
+                    if clean_text.strip():
+                        print("  Workday: extracted via JSON-LD")
+                        reqs_desc = local_llm_function.classify_job_for_juniors(clean_text[:4000])
+                        return json.loads(reqs_desc)
+            except Exception as e:
+                print(f"  Workday JSON-LD parse error: {e}")
+
+        # 2. Try Workday data-automation-id selectors
+        for automation_id in ("jobPostingDescription", "wd-text-viewer-placeholder"):
+            div = soup.find(attrs={"data-automation-id": automation_id})
+            if div:
+                clean_text = div.get_text(separator="\n").strip()
+                if clean_text:
+                    print(f"  Workday: extracted via data-automation-id={automation_id}")
+                    reqs_desc = local_llm_function.classify_job_for_juniors(clean_text[:4000])
+                    return json.loads(reqs_desc)
+
+        # 3. Fall back to full page body text
+        body = soup.find("body")
+        if body:
+            clean_text = body.get_text(separator="\n").strip()
+            if len(clean_text) > 200:
+                print("  Workday: falling back to full body text")
+                reqs_desc = local_llm_function.classify_job_for_juniors(clean_text[:4000])
+                return json.loads(reqs_desc)
+
+        return None
+
+    except Exception as e:
+        print(f"  Error fetching Workday job {url}: {e}")
+        return None
+
+
 def get_data_from_greenhouse(url):
     response = requests.get(url)
     txt = response.text
@@ -900,6 +959,8 @@ def test(data_array):
                 reqs_desc = get_data_from_comeet(f'{i["link"]}')
             elif 'green' in i['link']:
                 reqs_desc = get_data_from_greenhouse(f'{i["link"]}')
+            elif 'myworkdayjobs.com' in i['link']:
+                reqs_desc = get_data_from_workday(i['link'])
         except Exception as e:
             print(f"Error fetching job details for {i['company']}: {e}")
             reqs_desc = None
