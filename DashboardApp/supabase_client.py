@@ -130,7 +130,7 @@ def get_email_history_stats():
 def get_today_jobs():
     """
     Get jobs created today from scrapers_data (UTC day window).
-    Returns a list of lightweight job dicts.
+    Enriches each job with suitable_for_junior from desc_reqs_scrapers where available.
     """
     jobs = []
 
@@ -155,17 +155,38 @@ def get_today_jobs():
             .execute()
         )
 
-        if response.data:
-            for row in response.data:
-                jobs.append(
-                    {
-                        "company": row.get("company", ""),
-                        "job_name": row.get("job_name", ""),
-                        "city": row.get("city", ""),
-                        "link": row.get("link", ""),
-                        "created_at": row.get("created_at", ""),
-                    }
+        if not response.data:
+            return jobs
+
+        # Collect links to look up AI classification in bulk
+        links = [row["link"] for row in response.data if row.get("link")]
+        ai_map = {}
+        if links:
+            try:
+                ai_resp = (
+                    conn.table("desc_reqs_scrapers")
+                    .select("Link, suitable_for_junior")
+                    .in_("Link", links[:200])
+                    .execute()
                 )
+                for row in (ai_resp.data or []):
+                    lnk = row.get("Link", "")
+                    if lnk and lnk not in ai_map:
+                        ai_map[lnk] = row.get("suitable_for_junior")
+            except Exception as e:
+                print(f"Error fetching AI classifications for today's jobs: {e}")
+
+        for row in response.data:
+            link = row.get("link", "")
+            jobs.append({
+                "company": row.get("company", ""),
+                "job_name": row.get("job_name", ""),
+                "city": row.get("city", ""),
+                "link": link,
+                "created_at": row.get("created_at", ""),
+                "suitable_for_junior": ai_map.get(link),
+            })
+
     except Exception as e:
         print(f"Error fetching today's jobs from scrapers_data: {e}")
 

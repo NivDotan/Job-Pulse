@@ -459,6 +459,215 @@ body {
 .alert-message { font-weight: 500; }
 
 /* ============================================
+   Pipeline Tab
+   ============================================ */
+.pipeline-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+    height: 100%;
+}
+
+.pipeline-chart-card {
+    min-height: 320px;
+}
+
+.pipeline-funnel-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.card-note {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    font-style: italic;
+}
+
+.funnel-steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.funnel-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 14px 10px;
+    text-align: center;
+    min-width: 70px;
+}
+
+.funnel-step-accent {
+    border-color: rgba(6, 214, 160, 0.35);
+    background: rgba(6, 214, 160, 0.06);
+}
+
+.funnel-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.funnel-step-accent .funnel-number {
+    color: var(--accent-green);
+}
+
+.funnel-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+}
+
+.funnel-arrow {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.funnel-desc {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+    margin-top: auto;
+}
+
+/* ============================================
+   Scout Tab
+   ============================================ */
+.scout-layout {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 16px;
+    height: 100%;
+}
+
+.scout-chart-card {
+    min-height: 340px;
+}
+
+.scout-chart-container {
+    height: 300px !important;
+}
+
+.scout-details-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+}
+
+.scout-ats-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.ats-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.ats-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius-lg);
+    font-size: 0.72rem;
+    font-weight: 500;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-secondary);
+    transition: border-color 0.15s;
+}
+
+.ats-pill::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ats-color, #6b7280);
+    flex-shrink: 0;
+}
+
+.ats-pill strong {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+}
+
+/* ============================================
+   AI Rating Pills (Live Jobs table)
+   ============================================ */
+.ai-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--radius-lg);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.ai-pill-junior {
+    background: rgba(6, 214, 160, 0.15);
+    color: var(--accent-green);
+    border: 1px solid rgba(6, 214, 160, 0.3);
+}
+
+.ai-pill-senior {
+    background: rgba(107, 114, 128, 0.15);
+    color: var(--text-muted);
+    border: 1px solid rgba(107, 114, 128, 0.25);
+}
+
+.ai-pill-unclear {
+    background: rgba(255, 214, 10, 0.12);
+    color: var(--warning);
+    border: 1px solid rgba(255, 214, 10, 0.25);
+}
+
+.ai-pill-none {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Row tinting by AI rating */
+.today-job-row.row-junior td {
+    border-bottom-color: rgba(6, 214, 160, 0.15);
+}
+
+.today-job-row.row-junior:hover {
+    background: rgba(6, 214, 160, 0.04);
+}
+
+/* ============================================
    KPI Row (Cloudflare-style metric cards)
    ============================================ */
 .kpi-row {
@@ -601,6 +810,284 @@ body {
     width: 10px;
     height: 10px;
     border-radius: 3px;
+}
+
+/* ============================================
+   Snapshot Row — Overview Top Stats
+   ============================================ */
+.snapshot-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.snapshot-card {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: border-color 0.2s, transform 0.15s;
+}
+
+.snapshot-card:hover {
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-1px);
+}
+
+.snapshot-card.snap-accent { border-color: rgba(0, 245, 212, 0.2); }
+.snapshot-card.snap-accent:hover { border-color: rgba(0, 245, 212, 0.4); }
+.snapshot-card.snap-success { border-color: rgba(6, 214, 160, 0.2); }
+.snapshot-card.snap-success:hover { border-color: rgba(6, 214, 160, 0.4); }
+.snapshot-card.snap-good { border-color: rgba(6, 214, 160, 0.25); }
+.snapshot-card.snap-bad { border-color: rgba(239, 68, 68, 0.25); }
+
+.snapshot-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-muted);
+}
+
+.snap-accent .snapshot-icon-wrap { background: rgba(0, 245, 212, 0.1); color: var(--accent-cyan); }
+.snap-success .snapshot-icon-wrap { background: rgba(6, 214, 160, 0.1); color: var(--accent-green); }
+.snap-good .snapshot-icon-wrap { background: rgba(6, 214, 160, 0.1); color: var(--accent-green); }
+.snap-bad .snapshot-icon-wrap { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+.snapshot-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.snapshot-number {
+    display: block;
+    font-size: 1.55rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.snap-accent .snapshot-number { color: var(--accent-cyan); }
+.snap-success .snapshot-number { color: var(--accent-green); }
+.snap-good .snapshot-number { color: var(--accent-green); }
+.snap-bad .snapshot-number { color: var(--danger); }
+
+.snapshot-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+}
+
+.snapshot-sub {
+    display: block;
+    font-size: 0.67rem;
+    color: var(--text-muted);
+}
+
+/* ============================================
+   Featured Row — Picks + Recruiters
+   ============================================ */
+.featured-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.picks-card,
+.recruiters-card {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.picks-feed {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+.picks-loading,
+.picks-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.pick-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 8px;
+    margin: 0 -8px;
+    border-radius: var(--radius-sm);
+    border-bottom: 1px solid rgba(38,38,38,0.6);
+    transition: background 0.12s;
+    cursor: default;
+}
+
+.pick-item:last-child {
+    border-bottom: none;
+}
+
+.pick-item:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+.pick-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    box-shadow: 0 0 6px rgba(6, 214, 160, 0.55);
+    flex-shrink: 0;
+}
+
+.pick-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.pick-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.pick-meta {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+}
+
+.pick-company {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.pick-sep {
+    opacity: 0.4;
+}
+
+.pick-time {
+    margin-left: auto;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+    padding-left: 6px;
+}
+
+.pick-link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s;
+}
+
+.pick-link-btn:hover {
+    background: rgba(0, 245, 212, 0.12);
+    color: var(--accent-cyan);
+}
+
+/* Recruiters list */
+.recruiters-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+.recruiter-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.recruiter-rank {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    width: 16px;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.recruiter-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.recruiter-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+    text-transform: capitalize;
+}
+
+.recruiter-bar-track {
+    height: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.recruiter-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recruiter-count {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    font-weight: 600;
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: right;
 }
 
 /* ============================================
@@ -1661,6 +2148,12 @@ body {
    Responsive
    ============================================ */
 @media (max-width: 1024px) {
+    .snapshot-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .featured-row {
+        grid-template-columns: 1fr;
+    }
     .charts-row {
         grid-template-columns: 1fr;
     }
@@ -1673,7 +2166,6 @@ body {
     .email-tables-row {
         grid-template-columns: 1fr;
     }
-
     .today-jobs-layout {
         flex-direction: column;
     }
@@ -1694,6 +2186,10 @@ body {
 }
 
 @media (max-width: 768px) {
+    .pipeline-layout,
+    .scout-layout {
+        grid-template-columns: 1fr;
+    }
     .sidebar {
         position: fixed;
         left: 0;

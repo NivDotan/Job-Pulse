@@ -642,6 +642,34 @@ def api_emailed_jobs_by_date(target_date):
     return jsonify(get_emailed_jobs_by_date(target_date))
 
 
+@app.route('/api/ai-stats')
+def api_ai_stats():
+    """Return total AI-analyzed job count and junior-suitable rate."""
+    try:
+        conn = get_supabase_connection()
+        if not conn:
+            return jsonify({"total_analyzed": 0, "junior_suitable_rate": 0})
+
+        # Count rows in desc_reqs_scrapers using a column that always exists
+        resp = conn.table("desc_reqs_scrapers").select("Company").execute()
+        total = len(resp.data or [])
+
+        # Derive junior-suitable rate from emailed_jobs_history (is_filtered = junior)
+        rate = 0
+        try:
+            email_resp = conn.table("emailed_jobs_history").select("is_filtered").execute()
+            email_rows = email_resp.data or []
+            if email_rows:
+                junior = sum(1 for r in email_rows if r.get("is_filtered", False))
+                rate = round(junior / len(email_rows) * 100)
+        except Exception:
+            pass
+
+        return jsonify({"total_analyzed": total, "junior_suitable_rate": rate})
+    except Exception as e:
+        return jsonify({"error": str(e), "total_analyzed": 0, "junior_suitable_rate": 0})
+
+
 @app.route('/api/jobs/today')
 def api_jobs_today():
     """API endpoint for jobs in scrapers_data created today (UTC)."""

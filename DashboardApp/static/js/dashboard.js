@@ -4,11 +4,11 @@
  * Version: 5.0
  */
 
-console.log('=== Dashboard JS loaded - Version 5.0 ===');
+console.log('=== Dashboard JS loaded - Version 7.0 ===');
 
 // Chart instances
-let jobsTrendChart = null;
-let atsChart = null;
+let pipelineChart = null;
+let companiesBarChart = null;
 let analyticsTrendChart = null;
 
 const chartColors = {
@@ -27,6 +27,10 @@ const atsColors = {
     'smart': '#f72585',
     'comeet': '#ff6b35',
     'bamboohr': '#7b2cbf',
+    'workday': '#00b4d8',
+    'ashby': '#ffd60a',
+    'icims': '#e07a5f',
+    'jobvite': '#c77dff',
     'other': '#6b7280',
 };
 
@@ -34,11 +38,11 @@ let currentEmailDate = new Date().toISOString().split('T')[0];
 
 // Page title mapping
 const pageTitles = {
-    'dashboard': 'Dashboard',
-    'today-jobs': 'Today Jobs',
-    'email-history': 'Email History',
-    'run-history': 'Run History',
-    'analytics': 'Analytics',
+    'dashboard': 'Market Pulse',
+    'today-jobs': 'Live Jobs',
+    'email-history': 'Job History',
+    'run-history': 'System Status',
+    'analytics': 'AI Insights',
 };
 
 /* ============================================
@@ -102,8 +106,8 @@ function switchTab(page, tab) {
 }
 
 function resizeVisibleCharts() {
-    if (jobsTrendChart) jobsTrendChart.resize();
-    if (atsChart) atsChart.resize();
+    if (pipelineChart) pipelineChart.resize();
+    if (companiesBarChart) companiesBarChart.resize();
     if (analyticsTrendChart) analyticsTrendChart.resize();
 }
 
@@ -174,6 +178,7 @@ async function initDashboard() {
     }
 }
 
+
 /* ============================================
    Date Picker
    ============================================ */
@@ -217,6 +222,7 @@ async function loadEmailHistoryStats() {
     try {
         const data = await fetchAPI('/api/emailed-jobs/history');
         updateEmailHistoryStats(data);
+        updatePipelineChart(data);
     } catch (error) {
         console.error('Error loading email history stats:', error);
     }
@@ -317,12 +323,19 @@ async function loadJobDetails(link) {
     }
 }
 
+function aiRatingBadge(suitable) {
+    if (suitable === 'True') return '<span class="ai-pill ai-pill-junior">Junior ✓</span>';
+    if (suitable === 'False') return '<span class="ai-pill ai-pill-senior">Senior</span>';
+    if (suitable === 'Unclear') return '<span class="ai-pill ai-pill-unclear">Unclear</span>';
+    return '<span class="ai-pill ai-pill-none">—</span>';
+}
+
 function updateTodayJobsTable(jobs) {
     const tbody = document.getElementById('today-jobs-body');
     if (!tbody) return;
 
     if (!jobs || jobs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="loading-row">No jobs found for today.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="loading-row">No jobs found for today.</td></tr>';
         const title = document.getElementById('today-job-title');
         const meta = document.getElementById('today-job-meta');
         const desc = document.getElementById('today-job-desc');
@@ -332,10 +345,7 @@ function updateTodayJobsTable(jobs) {
         if (meta) meta.textContent = '';
         if (desc) desc.innerHTML = '<p class="placeholder-text">When new jobs are scraped today, they will appear here.</p>';
         if (reqs) reqs.innerHTML = '<li class="placeholder-text">Requirements will appear here if available.</li>';
-        if (msg) {
-            msg.style.display = 'none';
-            msg.textContent = '';
-        }
+        if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
         return;
     }
 
@@ -343,12 +353,15 @@ function updateTodayJobsTable(jobs) {
         const createdAt = job.created_at ? new Date(job.created_at) : null;
         const timeStr = createdAt ? createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
         const safeLink = escapeHtml(job.link || '');
+        const aiClass = job.suitable_for_junior === 'True' ? ' row-junior' :
+                        job.suitable_for_junior === 'False' ? ' row-senior' : '';
         return `
-            <tr class="today-job-row" data-link="${safeLink}" onclick="onTodayJobClick('${encodeURIComponent(job.link || '')}')">
+            <tr class="today-job-row${aiClass}" data-link="${safeLink}" onclick="onTodayJobClick('${encodeURIComponent(job.link || '')}')">
                 <td>${timeStr}</td>
                 <td>${escapeHtml(job.company || '')}</td>
                 <td>${escapeHtml(job.job_name || '')}</td>
                 <td>${escapeHtml(job.city || '')}</td>
+                <td>${aiRatingBadge(job.suitable_for_junior)}</td>
                 <td>${job.link ? `<a href="${safeLink}" target="_blank" class="job-link">Open →</a>` : ''}</td>
             </tr>
         `;
@@ -459,30 +472,39 @@ async function fetchAndUpdateDashboard() {
     console.log('fetchAndUpdateDashboard called');
 
     try {
-        const [kpis, coverage, filter, companies, alerts, history, trend, emailedJobs] = await Promise.all([
+        const [kpis, coverage, filter, companies, alerts, history, emailedJobs] = await Promise.all([
             fetchAPI('/api/kpis').catch(e => { console.error('KPIs error:', e); return {}; }),
             fetchAPI('/api/coverage').catch(e => { console.error('Coverage error:', e); return {}; }),
             fetchAPI('/api/filter').catch(e => { console.error('Filter error:', e); return {}; }),
             fetchAPI('/api/companies').catch(e => { console.error('Companies error:', e); return []; }),
             fetchAPI('/api/alerts').catch(e => { console.error('Alerts error:', e); return []; }),
             fetchAPI('/api/run-history').catch(e => { console.error('History error:', e); return []; }),
-            fetchAPI('/api/trend').catch(e => { console.error('Trend error:', e); return []; }),
             fetchAPI('/api/emailed-jobs').catch(e => { console.error('Emailed jobs error:', e); return {}; }),
         ]);
-
-        console.log('All data received:', { kpis, coverage, filter, companies, alerts, history, trend, emailedJobs });
 
         updateKPIs(kpis || {});
         updateCycleStatus(kpis?.cycle_state || 'idle');
         updateCompanyCoverage(coverage || {});
         updateFilterResults(filter || {});
         updateRunHistory(history || []);
-        updateTopCompanies(companies || []);
+        updateCompaniesBarChart(companies || []);
         updateLocations(filter?.locations || {});
         updateAlerts(alerts || []);
-        updateJobsTrendChart(trend || []);
-        updateATSChart(coverage?.ats_breakdown || {});
+        updateATPills(coverage?.ats_breakdown || {});
         updateEmailedJobs(emailedJobs || {});
+
+        // Snapshot strip
+        updateSnapshotCards(kpis || {}, coverage || {}, emailedJobs || {});
+
+        // Featured cards
+        updatePicksFeed(emailedJobs || {});
+        updateRecruitersList(companies || []);
+
+        // Pipeline funnel — today's numbers
+        const funnelRaw = document.getElementById('funnel-raw');
+        const funnelFiltered = document.getElementById('funnel-filtered');
+        if (funnelRaw) funnelRaw.textContent = formatNumber(kpis?.jobs_found_today || 0);
+        if (funnelFiltered) funnelFiltered.textContent = formatNumber(kpis?.jobs_passed_filter || 0);
 
         document.getElementById('last-updated-time').textContent = new Date().toLocaleString();
     } catch (error) {
@@ -618,21 +640,77 @@ function buildRunDetail(run) {
     return html;
 }
 
-function updateTopCompanies(companies) {
-    const container = document.getElementById('top-companies');
+function updateCompaniesBarChart(companies) {
+    const canvas = document.getElementById('companies-bar-chart');
+    if (!canvas || !companies || companies.length === 0) return;
 
-    if (!companies || companies.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏢</div><p>No company data available</p></div>';
+    const top10 = companies.slice(0, 10);
+    const labels = top10.map(c => c[0]);
+    const data = top10.map(c => c[1]);
+    const colors = labels.map((_, i) => `hsla(${175 + i * 18}, 65%, 52%, 0.82)`);
+
+    if (companiesBarChart) {
+        companiesBarChart.data.labels = labels;
+        companiesBarChart.data.datasets[0].data = data;
+        companiesBarChart.data.datasets[0].backgroundColor = colors;
+        companiesBarChart.update();
         return;
     }
 
-    container.innerHTML = companies.map((company, index) => `
-        <div class="company-item">
-            <span class="company-rank">#${index + 1}</span>
-            <span class="company-name">${company[0]}</span>
-            <span class="company-jobs">${company[1]} jobs</span>
-        </div>
-    `).join('');
+    companiesBarChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Jobs Today',
+                data,
+                backgroundColor: colors,
+                borderRadius: 4,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#161616',
+                    titleColor: '#e8eaed',
+                    bodyColor: '#9ca3af',
+                    borderColor: '#262626',
+                    borderWidth: 1,
+                    padding: 10,
+                    titleFont: { family: "'Outfit', sans-serif", size: 13, weight: '600' },
+                    bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(38,38,38,0.8)', drawBorder: false },
+                    ticks: { color: '#6b7280', font: { family: "'JetBrains Mono', monospace", size: 11 } }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af', font: { family: "'Outfit', sans-serif", size: 12 } }
+                }
+            }
+        }
+    });
+}
+
+function updateATPills(atsData) {
+    const container = document.getElementById('ats-pills');
+    if (!container || !atsData || Object.keys(atsData).length === 0) return;
+
+    container.innerHTML = Object.entries(atsData)
+        .sort((a, b) => b[1] - a[1])
+        .map(([ats, count]) => {
+            const color = atsColors[ats.toLowerCase()] || atsColors.other;
+            return `<span class="ats-pill" style="--ats-color: ${color}">${ats} <strong>${count}</strong></span>`;
+        }).join('');
 }
 
 function updateLocations(locations) {
@@ -672,192 +750,184 @@ function updateAlerts(alerts) {
 }
 
 /* ============================================
-   Charts
+   Snapshot Cards
    ============================================ */
 
-function updateJobsTrendChart(trendData) {
-    console.log('updateJobsTrendChart called with:', trendData);
+function updateSnapshotCards(kpis, coverage, emailedJobs) {
+    const snapCompanies = document.getElementById('snap-companies');
+    const snapJobs = document.getElementById('snap-jobs-today');
+    const snapPicks = document.getElementById('snap-junior-picks');
+    const snapRate = document.getElementById('snap-success-rate');
+    const snapRateCard = document.getElementById('snap-rate-card');
 
-    if (!trendData || trendData.length === 0) {
-        console.log('No trend data available');
-        return;
-    }
+    if (snapCompanies) snapCompanies.textContent = formatNumber(coverage.total_companies);
+    if (snapJobs) snapJobs.textContent = formatNumber(kpis.jobs_found_today);
+    if (snapPicks) snapPicks.textContent = formatNumber(emailedJobs.filtered_count || 0);
 
-    const ctx = document.getElementById('jobs-trend-chart');
-    if (!ctx) {
-        console.error('jobs-trend-chart canvas not found');
-        return;
-    }
-
-    const labels = trendData.map(d => {
-        const date = new Date(d.date);
-        return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    });
-
-    const jobsFound = trendData.map(d => d.jobs_found || 0);
-    const jobsFiltered = trendData.map(d => d.jobs_filtered || 0);
-
-    if (jobsTrendChart) {
-        jobsTrendChart.data.labels = labels;
-        jobsTrendChart.data.datasets[0].data = jobsFound;
-        jobsTrendChart.data.datasets[1].data = jobsFiltered;
-        jobsTrendChart.update();
-    } else {
-        jobsTrendChart = new Chart(ctx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Jobs Found (Raw)',
-                        data: jobsFound,
-                        borderColor: chartColors.purple,
-                        backgroundColor: 'rgba(123, 44, 191, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: chartColors.purple,
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                    },
-                    {
-                        label: 'Jobs Passed Filter',
-                        data: jobsFiltered,
-                        borderColor: chartColors.cyan,
-                        backgroundColor: 'rgba(0, 245, 212, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: chartColors.cyan,
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    intersect: false,
-                    mode: 'index',
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: '#9ca3af',
-                            font: { family: "'Outfit', sans-serif", size: 12 },
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: '#161616',
-                        titleColor: '#e8eaed',
-                        bodyColor: '#9ca3af',
-                        borderColor: '#262626',
-                        borderWidth: 1,
-                        padding: 12,
-                        titleFont: { family: "'Outfit', sans-serif", size: 14, weight: '600' },
-                        bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { color: 'rgba(38, 38, 38, 0.8)', drawBorder: false },
-                        ticks: { color: '#6b7280', font: { family: "'Outfit', sans-serif", size: 11 } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(38, 38, 38, 0.8)', drawBorder: false },
-                        ticks: { color: '#6b7280', font: { family: "'JetBrains Mono', monospace", size: 11 } }
-                    }
-                }
-            }
-        });
+    const rate = kpis.success_rate || 0;
+    if (snapRate) snapRate.textContent = `${rate}%`;
+    if (snapRateCard) {
+        snapRateCard.classList.remove('snap-good', 'snap-bad');
+        snapRateCard.classList.add(rate >= 80 ? 'snap-good' : 'snap-bad');
     }
 }
 
-function updateATSChart(atsData) {
-    console.log('updateATSChart called with:', atsData);
+/* ============================================
+   Junior Picks Feed
+   ============================================ */
 
-    const canvasElement = document.getElementById('ats-chart');
-    const legendContainer = document.getElementById('ats-legend');
+function updatePicksFeed(emailedJobs) {
+    const container = document.getElementById('picks-feed');
+    if (!container) return;
 
-    if (!canvasElement) {
-        console.error('ats-chart canvas not found');
+    const jobs = emailedJobs.filtered_jobs || [];
+
+    if (jobs.length === 0) {
+        container.innerHTML = '<div class="picks-empty"><span>No junior picks sent today yet</span></div>';
         return;
     }
 
-    if (!atsData || Object.keys(atsData).length === 0) {
-        console.log('No ATS data available');
+    container.innerHTML = jobs.slice(0, 8).map(job => {
+        const timeStr = job.sent_at ? new Date(job.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const title = job.title || '';
+        const company = job.company ? job.company.replace(/([a-z])([A-Z])/g, '$1 $2') : '';
+        const safeLink = escapeHtml(job.link || '');
+        return `
+            <div class="pick-item">
+                <span class="pick-dot"></span>
+                <div class="pick-body">
+                    <div class="pick-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
+                    <div class="pick-meta">
+                        <span class="pick-company">${escapeHtml(company)}</span>
+                        <span class="pick-sep">·</span>
+                        <span>${escapeHtml(job.city || '')}</span>
+                        <span class="pick-time">${timeStr}</span>
+                    </div>
+                </div>
+                ${safeLink ? `<a href="${safeLink}" target="_blank" class="pick-link-btn" title="Open job">↗</a>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+/* ============================================
+   Top Recruiters List
+   ============================================ */
+
+function updateRecruitersList(companies) {
+    const container = document.getElementById('recruiters-list');
+    if (!container || !companies || companies.length === 0) return;
+
+    const top = companies.slice(0, 8);
+    const maxCount = top[0]?.[1] || 1;
+
+    container.innerHTML = top.map((company, index) => {
+        const name = company[0] || '';
+        const count = company[1] || 0;
+        const pct = Math.round((count / maxCount) * 100);
+        const barColor = index === 0 ? 'var(--accent-cyan)' :
+                         index === 1 ? 'var(--accent-green)' :
+                         index <= 3 ? 'var(--accent-blue)' : 'var(--accent-purple)';
+        return `
+            <div class="recruiter-item">
+                <span class="recruiter-rank">${index + 1}</span>
+                <div class="recruiter-info">
+                    <div class="recruiter-name">${escapeHtml(name)}</div>
+                    <div class="recruiter-bar-track">
+                        <div class="recruiter-bar-fill" style="width: ${pct}%; background: ${barColor};"></div>
+                    </div>
+                </div>
+                <span class="recruiter-count">${formatNumber(count)}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+/* ============================================
+   Charts
+   ============================================ */
+
+function updatePipelineChart(historyData) {
+    const canvas = document.getElementById('pipeline-chart');
+    if (!canvas) return;
+
+    if (!historyData || !historyData.dates || historyData.dates.length === 0) return;
+
+    // dates array is newest-first; reverse for chronological display, take last 14
+    const dates = [...historyData.dates].reverse().slice(-14);
+    const labels = dates.map(d => formatDateShort(d));
+    const juniorData = dates.map(d => (historyData.stats[d] || {}).filtered || 0);
+    const otherData = dates.map(d => (historyData.stats[d] || {}).unfiltered || 0);
+
+    if (pipelineChart) {
+        pipelineChart.data.labels = labels;
+        pipelineChart.data.datasets[0].data = juniorData;
+        pipelineChart.data.datasets[1].data = otherData;
+        pipelineChart.update();
         return;
     }
 
-    const ctx = canvasElement.getContext('2d');
-
-    const labels = Object.keys(atsData);
-    const data = Object.values(atsData);
-    const colors = labels.map(label => atsColors[label.toLowerCase()] || atsColors.other);
-
-    if (atsChart) {
-        atsChart.data.labels = labels;
-        atsChart.data.datasets[0].data = data;
-        atsChart.data.datasets[0].backgroundColor = colors;
-        atsChart.update();
-    } else {
-        atsChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: colors,
-                    borderColor: '#000000',
-                    borderWidth: 3,
-                    hoverOffset: 8,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#161616',
-                        titleColor: '#e8eaed',
-                        bodyColor: '#9ca3af',
-                        borderColor: '#262626',
-                        borderWidth: 1,
-                        padding: 12,
-                        titleFont: { family: "'Outfit', sans-serif", size: 14, weight: '600' },
-                        bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
-                        callbacks: {
-                            label: function(context) {
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((context.raw / total) * 100).toFixed(1);
-                                return `${context.label}: ${context.raw} (${percentage}%)`;
-                            }
-                        }
+    pipelineChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Junior-Suitable',
+                    data: juniorData,
+                    backgroundColor: 'rgba(6, 214, 160, 0.82)',
+                    borderRadius: 4,
+                    borderSkipped: false,
+                },
+                {
+                    label: 'Other Jobs',
+                    data: otherData,
+                    backgroundColor: 'rgba(67, 97, 238, 0.5)',
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#9ca3af',
+                        font: { family: "'Outfit', sans-serif", size: 12 },
+                        usePointStyle: true,
+                        pointStyle: 'circle',
                     }
+                },
+                tooltip: {
+                    backgroundColor: '#161616',
+                    titleColor: '#e8eaed',
+                    bodyColor: '#9ca3af',
+                    borderColor: '#262626',
+                    borderWidth: 1,
+                    padding: 12,
+                    titleFont: { family: "'Outfit', sans-serif", size: 14, weight: '600' },
+                    bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    grid: { color: 'rgba(38,38,38,0.8)', drawBorder: false },
+                    ticks: { color: '#6b7280', font: { family: "'Outfit', sans-serif", size: 11 } }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    grid: { color: 'rgba(38,38,38,0.8)', drawBorder: false },
+                    ticks: { color: '#6b7280', font: { family: "'JetBrains Mono', monospace", size: 11 } }
                 }
             }
-        });
-    }
-
-    if (legendContainer) {
-        legendContainer.innerHTML = labels.map((label, index) => `
-            <div class="ats-legend-item">
-                <span class="ats-legend-color" style="background: ${colors[index]}"></span>
-                <span>${label} (${data[index]})</span>
-            </div>
-        `).join('');
-    }
+        }
+    });
 }
 
 /* ============================================
@@ -889,6 +959,10 @@ function updateEmailedJobs(data) {
     if (unfilteredCount) unfilteredCount.textContent = uc;
     if (filteredBadge) filteredBadge.textContent = fc;
     if (unfilteredBadge) unfilteredBadge.textContent = uc;
+
+    // Update pipeline funnel sent count (today's junior-suitable jobs)
+    const funnelSent = document.getElementById('funnel-sent');
+    if (funnelSent && isToday) funnelSent.textContent = fc;
 
     const noJobsMessage = isToday ? 'No jobs sent today' : `No jobs sent on ${dateLabel}`;
 
