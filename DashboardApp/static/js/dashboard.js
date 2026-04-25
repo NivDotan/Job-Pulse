@@ -12,26 +12,29 @@ let companiesBarChart = null;
 let analyticsTrendChart = null;
 
 const chartColors = {
-    cyan: '#00f5d4',
-    magenta: '#f72585',
-    purple: '#7b2cbf',
-    orange: '#ff6b35',
-    blue: '#4361ee',
-    green: '#06d6a0',
-    yellow: '#ffd60a',
+    gold:    '#c9a847',
+    green:   '#34d058',
+    blue:    '#6b9df2',
+    purple:  '#8b7cc8',
+    orange:  '#e07a50',
+    red:     '#e05f5f',
+    muted:   '#524e5d',
+    cyan:    '#c9a847',   // legacy alias
+    magenta: '#c9a847',   // legacy alias
+    yellow:  '#c9a847',   // legacy alias
 };
 
 const atsColors = {
-    'green': '#06d6a0',
-    'lever': '#4361ee',
-    'smart': '#f72585',
-    'comeet': '#ff6b35',
-    'bamboohr': '#7b2cbf',
-    'workday': '#00b4d8',
-    'ashby': '#ffd60a',
-    'icims': '#e07a5f',
-    'jobvite': '#c77dff',
-    'other': '#6b7280',
+    'green':        '#34d058',
+    'lever':        '#6b9df2',
+    'smart':        '#8b7cc8',
+    'comeet':       '#c9a847',
+    'bamboohr':     '#e07a50',
+    'workday':      '#5ba4cf',
+    'ashby':        '#c9a847',
+    'icims':        '#e05f5f',
+    'jobvite':      '#9b7cc8',
+    'other':        '#524e5d',
 };
 
 let currentEmailDate = new Date().toISOString().split('T')[0];
@@ -647,7 +650,7 @@ function updateCompaniesBarChart(companies) {
     const top10 = companies.slice(0, 10);
     const labels = top10.map(c => c[0]);
     const data = top10.map(c => c[1]);
-    const colors = labels.map((_, i) => `hsla(${175 + i * 18}, 65%, 52%, 0.82)`);
+    const colors = labels.map((_, i) => `hsla(${44 - i * 4}, ${68 - i * 3}%, ${58 - i * 2}%, 0.85)`);
 
     if (companiesBarChart) {
         companiesBarChart.data.labels = labels;
@@ -875,14 +878,14 @@ function updatePipelineChart(historyData) {
                 {
                     label: 'Junior-Suitable',
                     data: juniorData,
-                    backgroundColor: 'rgba(6, 214, 160, 0.82)',
+                    backgroundColor: 'rgba(52, 208, 88, 0.78)',
                     borderRadius: 4,
                     borderSkipped: false,
                 },
                 {
                     label: 'Other Jobs',
                     data: otherData,
-                    backgroundColor: 'rgba(67, 97, 238, 0.5)',
+                    backgroundColor: 'rgba(201, 168, 71, 0.35)',
                     borderRadius: 4,
                     borderSkipped: false,
                 }
