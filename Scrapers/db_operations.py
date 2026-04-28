@@ -793,6 +793,143 @@ def backfill_log_metadata(logs_dir: str, limit: int = 100) -> Dict[str, Any]:
 
 
 # ============================================
+# Scraper Job Schedule Operations
+# ============================================
+
+# ATS types per job category
+REGULAR_ATS_TYPES = ['green', 'lever', 'comeet', 'bamboohr', 'ashby', 'workday']
+NEW_ATS_TYPES = ['icims', 'jobvite']
+ALL_ATS_TYPES = REGULAR_ATS_TYPES + NEW_ATS_TYPES
+
+JOB_TYPE_ATS_MAP = {
+    'regular_ats': REGULAR_ATS_TYPES,
+    'new_ats':     NEW_ATS_TYPES,
+    'usa_digest':  ALL_ATS_TYPES,
+}
+
+
+def get_companies_by_job_type(job_type: str, active_only: bool = True) -> List[Dict[str, Any]]:
+    """
+    Fetch companies from DB filtered by job type.
+
+    Args:
+        job_type: One of 'regular_ats', 'new_ats', 'usa_digest'
+        active_only: If True, only return active companies
+
+    Returns:
+        List of company dicts in the same format as get_all_companies()
+    """
+    link_types = JOB_TYPE_ATS_MAP.get(job_type, ALL_ATS_TYPES)
+
+    try:
+        client = get_supabase_client()
+        query = client.table("company_data").select("*").in_("link_type", link_types)
+        if active_only:
+            query = query.eq("is_active", True)
+        response = query.execute()
+
+        companies = []
+        for row in response.data:
+            company = {"Company": row["company"], "LinkType": row["link_type"]}
+            if row.get("unique_identifier"):
+                if row["link_type"] == "workday":
+                    company["Workday Instance"] = row["unique_identifier"]
+                else:
+                    company["Unique Identifier"] = row["unique_identifier"]
+            companies.append(company)
+
+        logger.info(f"Fetched {len(companies)} companies for job_type='{job_type}'")
+        return companies
+
+    except Exception as e:
+        logger.error(f"Error fetching companies for job_type '{job_type}': {e}")
+        raise
+
+
+def get_due_jobs() -> List[str]:
+    """
+    Return job names from scraper_schedule that are due to run right now.
+    A job is due when next_run_at <= NOW() and is_enabled = TRUE.
+    Jobs with status 'running' are skipped to avoid duplicate spawns.
+    """
+    try:
+        client = get_supabase_client()
+        now = datetime.utcnow().isoformat()
+        response = (
+            client.table("scraper_schedule")
+            .select("job_name, last_status")
+            .eq("is_enabled", True)
+            .lte("next_run_at", now)
+            .execute()
+        )
+        # Skip jobs already running
+        return [
+            row["job_name"]
+            for row in (response.data or [])
+            if row.get("last_status") != "running"
+        ]
+    except Exception as e:
+        logger.error(f"Error checking due jobs: {e}")
+        return []
+
+
+def set_job_running(job_name: str) -> bool:
+    """
+    Mark a job as running and advance next_run_at by its interval.
+    Advancing next_run_at immediately prevents duplicate spawns if the cron
+    fires again before this run finishes.
+    """
+    try:
+        client = get_supabase_client()
+        resp = (
+            client.table("scraper_schedule")
+            .select("min_interval_min")
+            .eq("job_name", job_name)
+            .execute()
+        )
+        if not resp.data:
+            logger.warning(f"Job '{job_name}' not found in scraper_schedule")
+            return False
+
+        interval = resp.data[0]["min_interval_min"]
+        now = datetime.utcnow()
+        client.table("scraper_schedule").update({
+            "last_status":  "running",
+            "last_run_at":  now.isoformat(),
+            "next_run_at":  (now + timedelta(minutes=interval)).isoformat(),
+            "updated_at":   now.isoformat(),
+        }).eq("job_name", job_name).execute()
+
+        logger.info(f"Job '{job_name}' marked running; next_run_at in {interval} min")
+        return True
+
+    except Exception as e:
+        logger.error(f"Error setting job '{job_name}' as running: {e}")
+        return False
+
+
+def update_job_schedule(job_name: str, status: str = "completed", jobs_found: int = 0) -> bool:
+    """
+    Update status and jobs_found after a job finishes.
+    next_run_at was already set by set_job_running(); we only update status here.
+    """
+    try:
+        client = get_supabase_client()
+        client.table("scraper_schedule").update({
+            "last_status":     status,
+            "last_jobs_found": jobs_found,
+            "updated_at":      datetime.utcnow().isoformat(),
+        }).eq("job_name", job_name).execute()
+
+        logger.info(f"Job '{job_name}' finished with status='{status}', jobs_found={jobs_found}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Error updating schedule for job '{job_name}': {e}")
+        return False
+
+
+# ============================================
 # Discovery State Operations
 # ============================================
 

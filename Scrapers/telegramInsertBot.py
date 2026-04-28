@@ -64,6 +64,22 @@ def is_location_in_israel(location: str) -> bool:
     return False
 
 
+def is_location_in_usa(location: str) -> bool:
+    """Return True if the location is in the USA (and not Israel)."""
+    if is_location_in_israel(location):
+        return False
+    location = location.lower()
+    usa_keywords = [
+        "united states", "usa", "u.s.a", "u.s.", "us,",
+        "california", "new york", "texas", "washington", "oregon",
+        "massachusetts", "illinois", "georgia", "florida", "colorado",
+        "arizona", "virginia", "north carolina", "pennsylvania",
+        "sunnyvale", "santa clara", "san jose", "san francisco",
+        "seattle", "austin", "boston", "chicago", "atlanta",
+    ]
+    return any(keyword in location for keyword in usa_keywords)
+
+
 def is_location_in_israel_or_usa(location: str) -> bool:
     if is_location_in_israel(location):
         return True
@@ -101,7 +117,15 @@ def run_bash_script():
         print("Output:", e.output)
 
 
-async def process_jobs2(data):
+async def process_jobs2(data, location_filter='both'):
+    """
+    Write matching jobs to tmp.txt.
+
+    location_filter:
+      'both'         - Israeli or USA jobs (legacy behaviour)
+      'israel_only'  - Israeli jobs only (regular_ats / new_ats runs)
+      'usa_only'     - USA jobs only, excluding Israel (usa_digest run)
+    """
     os.makedirs(ETL_TMP_DIR, exist_ok=True)
     file_path = ETL_TMP_CLEAN
     try:
@@ -109,6 +133,14 @@ async def process_jobs2(data):
             os.remove(file_path)
     except Exception as e:
         print(f"Error deleting file: {e}")
+
+    # Pick the right location predicate based on the filter
+    if location_filter == 'israel_only':
+        _loc_check = is_location_in_israel
+    elif location_filter == 'usa_only':
+        _loc_check = is_location_in_usa
+    else:
+        _loc_check = is_location_in_israel_or_usa
 
     problem_companies = {
         "abra_rnd", "QualityScore", "ZIM", "gk8", "gk8bygalaxy",
@@ -139,7 +171,7 @@ async def process_jobs2(data):
                 job_with_company = [title, company_name, location, link]
 
                 try:
-                    if isinstance(location, str) and is_location_in_israel_or_usa(location):
+                    if isinstance(location, str) and _loc_check(location):
                         tmpbody = f"Company: {company_name}, Job Name: {title}, City: {location}, Link: {link}\n"
                         with open(file_path, "a", encoding="utf-8") as file:
                             file.write(tmpbody)
@@ -163,16 +195,15 @@ async def process_jobs2(data):
 
 
                         try:
-                            if isinstance(location, str) and is_location_in_israel_or_usa(location):
+                            if isinstance(location, str) and _loc_check(location):
                                 tmpbody = f"Company: {company_name}, Job Name: {title}, City: {location}, Link: {link}\n"
                                 with open(file_path, "a", encoding="utf-8") as file:
                                     file.write(tmpbody)
 
-                                    
                         except Exception as e:
                             print(f"Error occurred: {e}")
 
-                
+
 
                 # Case 2b: job_entry is a simple job list [title, location, link]
                 elif len(job_entry) >= 3:
@@ -184,7 +215,7 @@ async def process_jobs2(data):
                     job_with_company = [title, company_name, location, link]
 
                     try:
-                        if isinstance(location, str) and is_location_in_israel_or_usa(location):
+                        if isinstance(location, str) and _loc_check(location):
                             tmpbody = f"Company: {company_name}, Job Name: {title}, City: {location}, Link: {link}\n"
                             with open(file_path, "a", encoding="utf-8") as file:
                                 file.write(tmpbody)
@@ -1033,38 +1064,61 @@ def test(data_array):
 
 
 
-def main():
+def main(location_filter='israel_only'):
+    """
+    ETL entry point called by CleanScript after each scraper run.
+
+    location_filter:
+      'israel_only'  - Process Israeli jobs through the full LLM+email pipeline (regular_ats / new_ats)
+      'usa_only'     - Collect USA jobs, save to us_jobs_history, send digest immediately (usa_digest)
+      'both'         - Legacy: process both Israeli and USA jobs (not used by new schedule system)
+    """
     asyncio.get_event_loop().close()
-    print(asyncio.get_event_loop().is_closed())
     loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(asyncio.new_event_loop())
-    loop = asyncio.get_event_loop()
-    df_existing = get_existing_data_df() 
+    asyncio.set_event_loop(loop)
+
     with open(DEDUP_JSON_PATH, 'r') as file:
         data = json.load(file)
-    loop.run_until_complete(process_jobs2(data))
 
-    # Check if tmp.txt exists (it won't if no Israel jobs were found)
+    loop.run_until_complete(process_jobs2(data, location_filter=location_filter))
+
     tmp_file_path = ETL_TMP_CLEAN
     if not os.path.exists(tmp_file_path):
-        print("No Israel jobs found in this run - tmp.txt was not created. Skipping ETL processing.")
+        print(f"No jobs found for filter='{location_filter}' — tmp.txt not created. Skipping.")
         return
-      
-    with open(tmp_file_path, 'r',encoding='utf-8') as file:
+
+    with open(tmp_file_path, 'r', encoding='utf-8') as file:
         content = file.read()
-    
-    # Check if file is empty
+
     if not content.strip():
-        print("tmp.txt is empty - no jobs to process. Skipping ETL processing.")
+        print(f"tmp.txt is empty for filter='{location_filter}'. Skipping.")
         return
-        
+
+    # ── USA digest path ────────────────────────────────────────────────────────
+    if location_filter == 'usa_only':
+        # Don't touch scrapers_data — just collect US jobs and send the digest.
+        parsed = parse_job_string2(content)
+        us_jobs = [
+            {
+                "title":   j.get("job_name", ""),
+                "company": j.get("company", ""),
+                "city":    j.get("city", ""),
+                "link":    j.get("link", ""),
+            }
+            for j in parsed if j.get("link")
+        ]
+        save_us_jobs_to_supabase(us_jobs)
+        print(f"USA digest: saved {len(us_jobs)} jobs to us_jobs_history")
+        send_us_jobs_digest()
+        return
+
+    # ── Israeli jobs path (regular_ats / new_ats) ──────────────────────────────
+    df_existing = get_existing_data_df()
     df_new = get_new_data_df(content)
-    records_to_insert = process_and_sync_data(df_new, df_existing) 
+    records_to_insert = process_and_sync_data(df_new, df_existing)
     selected_columns = ["company", "job_name", "link", "city_y"]
     filtered_df = records_to_insert[selected_columns]
     data_dict = filtered_df.to_dict(orient="records")
-    data_array = filtered_df.values.tolist()
-    conn = connect()
     print("Records to insert:\n", data_dict)
     try:
         test(data_dict)

@@ -71,12 +71,16 @@ IS_RENDER_ENV = RUN_MODE in ("cron", "render") or os.environ.get("RENDER", "").l
 # Database operations for company data and log metadata
 from db_operations import (
     get_all_companies,
+    get_companies_by_job_type,
     get_latest_log_run,
     parse_log_file_for_metadata,
     save_log_metadata,
     sync_companies_from_json,
     get_companies_with_failures,
-    get_failure_summary
+    get_failure_summary,
+    get_due_jobs,
+    set_job_running,
+    update_job_schedule,
 )
 
 # Alerting system
@@ -501,7 +505,7 @@ class JobScraper:
 
         return resultsWithLinks
 
-    def main(self, words_to_search=None):
+    def main(self, words_to_search=None, location_filter='israel_only'):
         diff_parsing_companies = []
         Job_Found_By_Companies_And_Type = []
 
@@ -533,24 +537,38 @@ class JobScraper:
             print(f"Wrote dedup JSON to {DEDUP_JSON_PATH_UNCLEAN} ({len(Job_Found_By_Companies_And_Type)} companies)")
 
             self.remove_duplicates_json(DEDUP_JSON_PATH_UNCLEAN, DEDUP_JSON_PATH_CLEAN)
-            telegram_main()
+            telegram_main(location_filter=location_filter)
 
 
-def run_scraper_once():
+def run_scraper_once(job_type: str = 'regular_ats'):
     """
-    Run the scraper once: load companies, scrape, process, email, save metadata.
-    Used by both local (loop) mode and cron (single-run) mode.
+    Run one scheduled job: load companies for job_type, scrape, process, save metadata.
+
+    job_type values:
+      regular_ats  - Greenhouse/Lever/Comeet/BambooHR/Ashby/Workday, Israeli jobs only
+      new_ats      - iCIMS/Jobvite, Israeli jobs only
+      usa_digest   - All ATS, USA jobs only + send digest
     """
     import traceback
 
+    # Determine location filter for telegramInsertBot
+    location_filter = 'usa_only' if job_type == 'usa_digest' else 'israel_only'
+
+    print(f"[{job_type}] Starting run (location_filter={location_filter})")
     print(f"PROJECT_ROOT: {PROJECT_ROOT}")
     print(f"DEDUP_JSON_PATH_UNCLEAN: {DEDUP_JSON_PATH_UNCLEAN}")
     print(f"DEDUP_JSON_PATH_CLEAN: {DEDUP_JSON_PATH_CLEAN}")
 
+    # Mark job as running immediately to prevent duplicate spawns
+    try:
+        set_job_running(job_type)
+    except Exception as e:
+        print(f"[{job_type}] Warning: could not mark job as running: {e}")
+
     now = datetime.now()
     dt_string = now.strftime("%d_%m_%Y_%H")
     log_directory = LOG_DIRECTORY
-    log_filename = f'{log_directory}/scraper_{dt_string}.log'
+    log_filename = f'{log_directory}/scraper_{job_type}_{dt_string}.log'
 
     if IS_RENDER_ENV:
         os.makedirs(log_directory, exist_ok=True)
@@ -575,34 +593,36 @@ def run_scraper_once():
 
     if IS_RENDER_ENV:
         try:
-            company_data = get_all_companies()
-            print(f"Loaded {len(company_data)} companies from database")
-            logging.info(f"Loaded {len(company_data)} companies from database")
+            company_data = get_companies_by_job_type(job_type)
+            print(f"[{job_type}] Loaded {len(company_data)} companies from database")
+            logging.info(f"[{job_type}] Loaded {len(company_data)} companies from database")
             if not company_data:
-                logging.error("Database returned 0 companies. Cannot proceed on Render without DB data.")
-                print("ERROR: No companies in database. Add companies via db_operations sync first.")
+                logging.error(f"[{job_type}] Database returned 0 companies. Cannot proceed.")
+                print(f"ERROR: No companies for job_type={job_type}.")
+                update_job_schedule(job_type, status='failed', jobs_found=0)
                 return
         except Exception as e:
-            logging.error(f"Failed to load companies from database: {e}")
+            logging.error(f"[{job_type}] Failed to load companies from database: {e}")
             print(f"ERROR: Cannot load companies from DB: {e}")
+            update_job_schedule(job_type, status='failed', jobs_found=0)
             return
     else:
         try:
             sync_companies_from_json(COMPANY_DATA_JSON)
-            company_data = get_all_companies()
-            print(f"Loaded {len(company_data)} companies from database")
-            logging.info(f"Loaded {len(company_data)} companies from database")
+            company_data = get_companies_by_job_type(job_type)
+            print(f"[{job_type}] Loaded {len(company_data)} companies from database")
+            logging.info(f"[{job_type}] Loaded {len(company_data)} companies from database")
 
             if not company_data or len(company_data) == 0:
-                print("Database returned 0 companies, falling back to JSON file")
-                logging.warning("Database returned 0 companies, falling back to JSON file")
+                print(f"[{job_type}] Database returned 0 companies, falling back to JSON")
+                logging.warning(f"[{job_type}] Database returned 0 companies, falling back to JSON")
                 json_data = json_file_class(COMPANY_DATA_JSON)
                 company_data = json_data.data
-                print(f"Loaded {len(company_data)} companies from JSON fallback")
-                logging.info(f"Loaded {len(company_data)} companies from JSON fallback")
+                print(f"[{job_type}] Loaded {len(company_data)} companies from JSON fallback")
+                logging.info(f"[{job_type}] Loaded {len(company_data)} companies from JSON fallback")
         except Exception as e:
-            print(f"Failed to load from database, falling back to JSON: {e}")
-            logging.warning(f"Failed to load from database, falling back to JSON: {e}")
+            print(f"[{job_type}] Failed to load from database, falling back to JSON: {e}")
+            logging.warning(f"[{job_type}] Failed to load from database, falling back to JSON: {e}")
             json_data = json_file_class(COMPANY_DATA_JSON)
             company_data = json_data.data
 
@@ -619,7 +639,7 @@ def run_scraper_once():
     ]
 
     try:
-        scraper.main(words_to_search)
+        scraper.main(words_to_search, location_filter=location_filter)
     except Exception as scraper_error:
         error_trace = traceback.format_exc()
         logging.critical(f"Scraper crashed: {scraper_error}")
@@ -676,7 +696,8 @@ def run_scraper_once():
         print(f"Error saving log metadata: {e}")
         logging.error(f"Error saving log metadata to database: {e}")
 
-    if LOG_CLEANUP_ENABLED and RUN_MODE == "local":
+    # Log cleanup only during regular_ats runs (once every 2h is plenty)
+    if LOG_CLEANUP_ENABLED and RUN_MODE == "local" and job_type == 'regular_ats':
         try:
             cleanup_policy = LogCleanupPolicy(
                 retention_days=30,
@@ -691,58 +712,73 @@ def run_scraper_once():
         except Exception as cleanup_err:
             logging.error(f"Error during log cleanup: {cleanup_err}")
 
-    # Send nightly US-jobs digest at 8 PM Israel time (only fires once per day
-    # because send_us_jobs_digest() marks rows as emailed after sending).
-    try:
-        from telegramInsertBot import is_us_digest_time, send_us_jobs_digest
-        if is_us_digest_time():
-            logging.info("US digest window reached — sending nightly US-jobs email")
-            send_us_jobs_digest()
-    except Exception as digest_err:
-        logging.warning(f"US digest failed (non-fatal): {digest_err}")
+    # Company discovery runs only as part of regular_ats (once per cron tick is enough).
+    if job_type == 'regular_ats':
+        try:
+            from company_discovery import run_discovery_if_due
+            run_discovery_if_due(interval_hours=24)
+        except Exception as discovery_err:
+            logging.warning(f"Discovery check failed (non-fatal): {discovery_err}")
 
-    # Run company discovery for whichever ATS is most overdue (one per cron tick).
-    # State is tracked in the discovery_state table — no extra Render services needed.
+    # Update schedule table to mark this job as completed
+    jobs_found_count = 0
     try:
-        from company_discovery import run_discovery_if_due
-        run_discovery_if_due(interval_hours=24)
-    except Exception as discovery_err:
-        logging.warning(f"Discovery check failed (non-fatal): {discovery_err}")
+        metrics_for_schedule = parse_log_file_for_metadata(log_filename)
+        jobs_found_count = metrics_for_schedule.get("jobs_found", 0)
+    except Exception:
+        pass
+    try:
+        update_job_schedule(job_type, status='completed', jobs_found=jobs_found_count)
+    except Exception as sched_err:
+        logging.warning(f"Could not update schedule for {job_type}: {sched_err}")
 
-    logging.info("Scraper run finished.")
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Scrape complete.")
+    logging.info(f"[{job_type}] Run finished.")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [{job_type}] Scrape complete.")
 
 
 if __name__ == '__main__':
+    import argparse
     import time
 
+    parser = argparse.ArgumentParser(description="Job scraper")
+    parser.add_argument(
+        "--job",
+        choices=["regular_ats", "new_ats", "usa_digest"],
+        default=None,
+        help="Which job to run. Omit to let the schedule table decide (local loop mode)."
+    )
+    args = parser.parse_args()
+
     if RUN_MODE == "cron":
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running in CRON mode (single run)")
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] CRON mode")
 
         is_allowed, schedule_msg = is_within_schedule()
         if not is_allowed:
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {schedule_msg} Exiting without running.")
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {schedule_msg} Exiting.")
             sys.exit(0)
 
-        MIN_INTERVAL_MINUTES = int(os.environ.get("SCRAPER_MIN_INTERVAL_MINUTES", "110"))
-        minutes_since_last_run = None
-        try:
-            latest_run = get_latest_log_run()
-            if latest_run and latest_run.get("start_time"):
-                last_run_iso = latest_run["start_time"].replace("Z", "+00:00")
-                last_dt = datetime.fromisoformat(last_run_iso)
-                if last_dt.tzinfo:
-                    last_dt = last_dt.astimezone(timezone.utc).replace(tzinfo=None)
-                minutes_since_last_run = (datetime.utcnow() - last_dt).total_seconds() / 60.0
-        except Exception as e:
-            print(f"Could not get last run from DB: {e}. Proceeding with scrape.")
+        if args.job:
+            # Explicit --job arg: run exactly that job (used when spawned by app.py)
+            run_scraper_once(args.job)
+        else:
+            # No --job arg: check schedule table and run whatever is due
+            # This is the path used by the Render cron command (python CleanScript.py)
+            due_jobs = []
+            try:
+                due_jobs = get_due_jobs()
+            except Exception as e:
+                print(f"Could not read schedule table: {e}. Defaulting to regular_ats.")
+                due_jobs = ["regular_ats"]
 
-        if minutes_since_last_run is not None and minutes_since_last_run < MIN_INTERVAL_MINUTES:
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Last run was {minutes_since_last_run:.1f} min ago; need {MIN_INTERVAL_MINUTES} min. Skipping. Exiting.")
-            sys.exit(0)
+            if not due_jobs:
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] No jobs due. Exiting.")
+                sys.exit(0)
 
-        run_scraper_once()
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Cron job finished. Exiting.")
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Due jobs: {due_jobs}")
+            for job_type in due_jobs:
+                run_scraper_once(job_type)
+
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Cron finished. Exiting.")
         sys.exit(0)
 
     else:
@@ -754,8 +790,6 @@ if __name__ == '__main__':
         from DashboardApp.app import app as dashboard_app
         PORT = DASHBOARD_PORT
         NGROK_DOMAIN = os.environ.get("NGROK_DOMAIN", "")
-
-        SLEEP_INTERVAL = int(os.environ.get("SCRAPER_SLEEP_INTERVAL", 7200))
 
         def run_dashboard():
             dashboard_app.run(debug=False, host='0.0.0.0', port=PORT, use_reloader=False)
@@ -776,20 +810,38 @@ if __name__ == '__main__':
         print(f"Start time: {os.environ.get('SCRAPER_START_HOUR', '08:00')}")
         print(f"End time: {os.environ.get('SCRAPER_END_HOUR', '22:30')}")
         print(f"Skip days: {os.environ.get('SCRAPER_SKIP_DAYS', '5')} (5=Saturday)")
-        print(f"Sleep interval: {SLEEP_INTERVAL} seconds ({SLEEP_INTERVAL/3600:.1f} hours)")
+        print(f"Schedule-driven loop — checks every 15 min for due jobs")
         print(f"================================\n")
+
+        # If --job was given explicitly, run just that job once then loop normally
+        if args.job:
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running explicit job: {args.job}")
+            run_scraper_once(args.job)
 
         while True:
             is_allowed, schedule_msg = is_within_schedule()
-
             if not is_allowed:
                 print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {schedule_msg}")
                 print("Waiting 15 minutes before checking again...")
                 time.sleep(15 * 60)
                 continue
 
-            run_scraper_once()
+            # Ask the schedule table what's due
+            due_jobs = []
+            try:
+                due_jobs = get_due_jobs()
+            except Exception as e:
+                print(f"Could not read schedule table: {e}. Defaulting to regular_ats.")
+                due_jobs = ["regular_ats"]
 
-            logging.info(f"Sleeping for {SLEEP_INTERVAL/3600:.1f} hours...")
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Sleeping for {SLEEP_INTERVAL/3600:.1f} hours...")
-            time.sleep(SLEEP_INTERVAL)
+            if not due_jobs:
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] No jobs due. Checking again in 15 min.")
+                time.sleep(15 * 60)
+                continue
+
+            for job_type in due_jobs:
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running due job: {job_type}")
+                run_scraper_once(job_type)
+
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Finished {due_jobs}. Sleeping 15 min.")
+            time.sleep(15 * 60)

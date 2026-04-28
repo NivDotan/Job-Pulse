@@ -150,132 +150,97 @@ def api_cron_trigger_test():
 @app.route('/api/cron-trigger')
 def api_cron_trigger():
     """
-    Endpoint for external cron to ping every ~13 minutes.
-    It checks the last scraper run time from the database and:
-    - If no previous run or more than 1h50m have passed: runs the scraper once (synchronously)
-    - Otherwise: returns a JSON response and exits without running the scraper
+    Single cron endpoint — called every 2 hours by Render.
+    Checks the scraper_schedule table to decide which jobs are due, then
+    spawns each due job as a subprocess (serially to avoid file collisions).
     """
-    MIN_INTERVAL_MINUTES = int(os.environ.get("SCRAPER_MIN_INTERVAL_MINUTES", "110"))  # 1h50m
-
     if not SCRAPER_AVAILABLE:
         return jsonify({
             "status": "error",
-            "reason": "CleanScript.py not found on this service (path: %s)" % CLEANSCRIPT_PATH,
+            "reason": "CleanScript.py not found (path: %s)" % CLEANSCRIPT_PATH,
         }), 500
 
-    last_run_iso = None
-    minutes_since_last_run = None
-
-    latest_run = None
-    if DB_OPERATIONS_AVAILABLE:
-        try:
-            latest_run = get_latest_log_run()
-        except Exception as e:
-            print(f"Error fetching latest log run in cron trigger: {e}")
-
-    if latest_run and latest_run.get("start_time"):
-        last_run_iso = latest_run["start_time"]
-        try:
-            ts = last_run_iso.replace("Z", "+00:00")
-            last_dt = datetime.fromisoformat(ts)
-            if last_dt.tzinfo is not None:
-                from datetime import timezone
-                last_dt = last_dt.astimezone(timezone.utc).replace(tzinfo=None)
-            now_utc = datetime.utcnow()
-            diff = now_utc - last_dt
-            minutes_since_last_run = diff.total_seconds() / 60.0
-        except Exception as e:
-            print(f"Error parsing last_run_iso in cron trigger: {e}")
-            minutes_since_last_run = None
-
-    should_run = False
-    if minutes_since_last_run is None:
-        should_run = True
-    else:
-        should_run = minutes_since_last_run >= MIN_INTERVAL_MINUTES
-
+    # ── Schedule window check (shared across all jobs) ─────────────────────
     schedule_allowed = True
     schedule_message = ""
     try:
-        now = datetime.utcnow()
+        now_utc = datetime.utcnow()
         start_time_str = os.environ.get("SCRAPER_START_HOUR", "08:00")
-        end_time_str = os.environ.get("SCRAPER_END_HOUR", "22:30")
-        skip_days_str = os.environ.get("SCRAPER_SKIP_DAYS", "5")
+        end_time_str   = os.environ.get("SCRAPER_END_HOUR",   "22:30")
+        skip_days_str  = os.environ.get("SCRAPER_SKIP_DAYS",  "5")
         skip_days = [int(d.strip()) for d in skip_days_str.split(",") if d.strip()]
-        if now.weekday() in skip_days:
+        if now_utc.weekday() in skip_days:
             schedule_allowed = False
             schedule_message = "Skip day"
         else:
-            parts = start_time_str.split(":")
-            sh, sm = (int(parts[0]), int(parts[1])) if len(parts) >= 2 else (8, 0)
-            parts = end_time_str.split(":")
-            eh, em = (int(parts[0]), int(parts[1])) if len(parts) >= 2 else (22, 30)
-            now_m = now.hour * 60 + now.minute
+            sh, sm = map(int, start_time_str.split(":")) if ":" in start_time_str else (8, 0)
+            eh, em = map(int, end_time_str.split(":"))   if ":" in end_time_str   else (22, 30)
+            now_m = now_utc.hour * 60 + now_utc.minute
             if now_m < sh * 60 + sm or now_m > eh * 60 + em:
                 schedule_allowed = False
                 schedule_message = "Outside schedule window"
     except Exception as e:
-        print(f"Error checking schedule in cron trigger: {e}")
+        print(f"Error checking schedule window: {e}")
 
     if not schedule_allowed:
         return jsonify({
-            "status": "skipped",
-            "reason": schedule_message or "Outside configured schedule window",
-            "last_run_time": last_run_iso,
-            "minutes_since_last_run": minutes_since_last_run,
+            "status":    "skipped",
+            "reason":    schedule_message or "Outside configured schedule window",
             "triggered": False,
         })
 
-    if not should_run:
+    # ── Determine which jobs are due ────────────────────────────────────────
+    due_jobs = []
+    try:
+        sys.path.insert(0, SCRAPERS_DIR)
+        from db_operations import get_due_jobs as _get_due_jobs
+        due_jobs = _get_due_jobs()
+    except Exception as e:
+        print(f"Could not read scraper_schedule table: {e}. Falling back to regular_ats.")
+        due_jobs = ["regular_ats"]
+
+    if not due_jobs:
         return jsonify({
-            "status": "skipped",
-            "reason": f"Last run was {minutes_since_last_run:.1f} minutes ago; "
-                      f"threshold is {MIN_INTERVAL_MINUTES} minutes",
-            "last_run_time": last_run_iso,
-            "minutes_since_last_run": minutes_since_last_run,
+            "status":    "skipped",
+            "reason":    "No jobs due according to scraper_schedule",
             "triggered": False,
         })
 
+    # ── Spawn each due job serially (shared tmp files — must not overlap) ───
     import subprocess
     env = os.environ.copy()
-    env["RUN_MODE"] = "cron"
-    env["PROJECT_ROOT"] = BASE_DIR
-    try:
-        proc = subprocess.run(
-            [sys.executable, CLEANSCRIPT_PATH],
-            cwd=SCRAPERS_DIR,
-            env=env,
-            timeout=7200,  # 2 hours max
-            capture_output=True,
-            text=True,
-        )
-        if proc.returncode != 0:
-            print(f"Cron trigger subprocess stderr: {proc.stderr[:1000] if proc.stderr else 'none'}")
-        return jsonify({
-            "status": "completed",
-            "reason": "Scraper run executed",
-            "last_run_time": last_run_iso,
-            "minutes_since_last_run": minutes_since_last_run,
-            "triggered": True,
-            "subprocess_returncode": proc.returncode,
-        })
-    except subprocess.TimeoutExpired:
-        return jsonify({
-            "status": "error",
-            "reason": "Scraper subprocess timed out (2h)",
-            "last_run_time": last_run_iso,
-            "triggered": False,
-        }), 500
-    except Exception as e:
-        print(f"Error running scraper from cron trigger: {e}")
-        return jsonify({
-            "status": "error",
-            "reason": "Exception while running scraper",
-            "error": str(e),
-            "last_run_time": last_run_iso,
-            "minutes_since_last_run": minutes_since_last_run,
-            "triggered": False,
-        }), 500
+    env["RUN_MODE"]      = "cron"
+    env["PROJECT_ROOT"]  = BASE_DIR
+
+    results = {}
+    for job_name in due_jobs:
+        print(f"[cron-trigger] Spawning job: {job_name}")
+        try:
+            proc = subprocess.run(
+                [sys.executable, CLEANSCRIPT_PATH, "--job", job_name],
+                cwd=SCRAPERS_DIR,
+                env=env,
+                timeout=7200,   # 2 h per job max
+                capture_output=True,
+                text=True,
+            )
+            if proc.returncode != 0:
+                stderr_snippet = (proc.stderr or "")[:500]
+                print(f"[cron-trigger] {job_name} exited {proc.returncode}: {stderr_snippet}")
+            results[job_name] = proc.returncode
+        except subprocess.TimeoutExpired:
+            print(f"[cron-trigger] {job_name} timed out")
+            results[job_name] = "timeout"
+        except Exception as exc:
+            print(f"[cron-trigger] {job_name} error: {exc}")
+            results[job_name] = str(exc)
+
+    return jsonify({
+        "status":    "completed",
+        "triggered": True,
+        "jobs_run":  due_jobs,
+        "results":   results,
+    })
 
 
 @app.route('/')
