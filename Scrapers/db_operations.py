@@ -846,28 +846,50 @@ def get_companies_by_job_type(job_type: str, active_only: bool = True) -> List[D
         raise
 
 
+STALE_RUNNING_THRESHOLD_MIN = 90
+
+
 def get_due_jobs() -> List[str]:
     """
     Return job names from scraper_schedule that are due to run right now.
     A job is due when next_run_at <= NOW() and is_enabled = TRUE.
-    Jobs with status 'running' are skipped to avoid duplicate spawns.
+    Jobs with status 'running' are skipped to avoid duplicate spawns, unless
+    the run has been in 'running' state for more than STALE_RUNNING_THRESHOLD_MIN
+    minutes (indicating the previous process crashed without cleanup).
     """
     try:
         client = get_supabase_client()
-        now = datetime.utcnow().isoformat()
+        now = datetime.utcnow()
         response = (
             client.table("scraper_schedule")
-            .select("job_name, last_status")
+            .select("job_name, last_status, last_run_at")
             .eq("is_enabled", True)
-            .lte("next_run_at", now)
+            .lte("next_run_at", now.isoformat())
             .execute()
         )
-        # Skip jobs already running
-        return [
-            row["job_name"]
-            for row in (response.data or [])
-            if row.get("last_status") != "running"
-        ]
+        due = []
+        for row in (response.data or []):
+            if row.get("last_status") != "running":
+                due.append(row["job_name"])
+                continue
+            # Running but stale? Treat as not running.
+            last_run_at = row.get("last_run_at")
+            if last_run_at:
+                try:
+                    last_run_dt = datetime.fromisoformat(last_run_at.replace("Z", "+00:00"))
+                    last_run_dt = last_run_dt.replace(tzinfo=None)
+                    elapsed_min = (now - last_run_dt).total_seconds() / 60
+                    if elapsed_min > STALE_RUNNING_THRESHOLD_MIN:
+                        logger.warning(
+                            f"Job '{row['job_name']}' stuck in 'running' for "
+                            f"{elapsed_min:.0f} min — treating as stale, will re-run."
+                        )
+                        due.append(row["job_name"])
+                except Exception:
+                    due.append(row["job_name"])
+            else:
+                due.append(row["job_name"])
+        return due
     except Exception as e:
         logger.error(f"Error checking due jobs: {e}")
         return []
