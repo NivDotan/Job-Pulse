@@ -154,3 +154,54 @@ After that first run it will self-schedule at the same offset every ~23 hours.
 | `Scrapers/CleanScript.py` | `run_scraper_once(job_type)`, `--job` arg, schedule-driven loop |
 | `Scrapers/telegramInsertBot.py` | `is_location_in_usa()`, `location_filter` param on `process_jobs2` and `main` |
 | `DashboardApp/app.py` | `/api/cron-trigger` now reads `scraper_schedule` and spawns per-job |
+
+---
+
+## Analytics Impact
+
+The AI Insights portfolio analytics page does not add a new scheduled job and does not mutate Supabase rows. It reads the tables populated by the scheduled scraper runs and standardizes data at request time.
+
+Relevant analytics files:
+
+| File | Role |
+|---|---|
+| `DashboardApp/app.py` | Exposes `GET /api/analytics/portfolio` |
+| `DashboardApp/analytics.py` | Fetches source rows, aggregates portfolio analytics, builds `listing_analysis` |
+| `DashboardApp/standardization.py` | Normalizes companies, titles, seniority, locations, links, requirements, descriptions, skills, dates, and statuses |
+| `DashboardApp/templates/index.html` | AI Insights layout |
+| `DashboardApp/static/js/dashboard.js` | Automatic filter reloads, stale-response protection, loading banner/skeleton state |
+| `DashboardApp/static/css/styles.css` | Portfolio analytics styling and loading animations |
+
+The visible AI Insights page now uses automatic filters and loading feedback. Date/select filters reload immediately; company and keyword filters reload after a short debounce. The dashboard shows a loading banner, progress track, and skeleton shimmer while `/api/analytics/portfolio` fetches new data.
+
+`PORTFOLIO_ANALYTICS_MAX_ROWS` controls the portfolio analytics source-query cap and defaults to `2000`.
+
+---
+
+## Groq Batch Queue Impact
+
+The Groq batch queue does not add a new scheduled job. It runs inside the existing scraper/email flow only when a live Groq classification call is rejected by quota or rate limiting.
+
+Relevant files:
+
+| File | Role |
+|---|---|
+| `Scrapers/groq_batch_queue.py` | Builds Groq Batch-compatible JSONL, deduplicates by `custom_id`, and writes to Supabase Storage |
+| `Scrapers/local_llm_function.py` | Provides the shared `build_junior_classification_prompt(raw_text)` and current `LLM_MODEL` |
+| `Scrapers/telegramInsertBot.py` | Catches Groq rate-limit candidates after clean text extraction and queues them while preserving fallback email behavior |
+| `Scrapers/tests/test_groq_batch_queue.py` | Unit tests for JSONL shape, dedupe, metadata sidecar, and rate-limit detection |
+
+Storage paths:
+
+- Real daily queue: `YYYY-MM-DD/groq_batch_YYYY-MM-DD.jsonl`
+- Real daily metadata: `YYYY-MM-DD/groq_batch_YYYY-MM-DD.meta.jsonl`
+- Smoke queue: `smoke/groq_batch_storage_smoke_YYYY-MM-DD.jsonl`
+- Smoke metadata: `smoke/groq_batch_storage_smoke_YYYY-MM-DD.meta.jsonl`
+
+Operational notes:
+
+- Bucket: `groq-batch-requests`
+- Recommended bucket visibility: private
+- Server env needs `SUPABASE_SERVICE_ROLE_KEY` or `supabaseServiceKey` for Storage writes
+- A public bucket alone is not enough to solve Storage insert/update permissions
+- Smoke command: `python Scrapers/groq_batch_queue.py --smoke`

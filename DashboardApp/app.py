@@ -66,6 +66,7 @@ from analytics import (
     _analytics_top_titles,
     _analytics_top_requirements,
     _analytics_trend,
+    get_portfolio_analytics,
 )
 
 # Enable CORS for all routes
@@ -452,6 +453,34 @@ def api_analytics_trend():
         keyword = _normalize_text(request.args.get("keyword", ""))
         rows = _get_desc_reqs_rows(start, end, companies=companies or None, keyword=keyword or None)
         return jsonify({"items": _analytics_trend(rows)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/analytics/portfolio')
+def api_analytics_portfolio():
+    try:
+        today = datetime.utcnow().date()
+        start = _parse_ymd_date(request.args.get("start"), today - timedelta(days=30))
+        end = _parse_ymd_date(request.args.get("end"), today)
+        if end < start:
+            return jsonify({"error": "Invalid date range: end must be >= start"}), 400
+
+        companies = _split_csv_param(request.args.get("companies", ""))
+        keyword = _normalize_text(request.args.get("keyword", ""))
+        country = _normalize_text(request.args.get("country", ""))
+        seniority = _normalize_text(request.args.get("seniority", ""))
+        limit = min(max(int(request.args.get("limit", 50)), 1), 200)
+
+        return jsonify(get_portfolio_analytics(
+            start=start,
+            end=end,
+            companies=companies or None,
+            keyword=keyword,
+            country=country,
+            seniority=seniority,
+            limit=limit,
+        ))
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

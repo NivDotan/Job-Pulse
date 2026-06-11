@@ -23,6 +23,23 @@ def _get_headers() -> dict[str, str]:
     return headers
 
 
+def build_junior_classification_prompt(raw_text: str) -> str:
+    return (
+        f"Here is the raw text extracted from a job listing webpage:\n\n{raw_text}\n\n"
+        "Your task is to extract structured information in JSON format. The JSON must include:\n"
+        "1. 'desc': a concise summary of the job description and responsibilities.\n"
+        "2. 'reqs': a list of required qualifications or skills (as an array of strings).\n"
+        "3. 'suitable_for_junior': whether this job is suitable for a computer science student, junior developer, or someone early in their career.\n\n"
+        "The JSON response should look like this:\n"
+        "{\n"
+        '  "desc": string,\n'
+        '  "reqs": [string, string, ...],\n'
+        '  "suitable_for_junior": "True" | "False" | "Unclear"\n'
+        "}\n\n"
+        "Ensure the result contains only relevant information from the raw text and no extra commentary."
+    )
+
+
 def extract_job_info_from_text(raw_text: str, model: Optional[str] = None, server_url: Optional[str] = None) -> str:
     """
     Extract job description and requirements from raw text using LLM.
@@ -72,20 +89,7 @@ def classify_job_for_juniors_Local(raw_text: str, model: Optional[str] = None, s
     server_url = server_url or LLM_API_URL
     headers = _get_headers()
 
-    prompt = (
-    f"Here is the raw text extracted from a job listing webpage:\n\n{raw_text}\n\n"
-    "Your task is to extract structured information in JSON format. The JSON must include:\n"
-    "1. 'desc': a concise summary of the job description and responsibilities.\n"
-    "2. 'reqs': a list of required qualifications or skills (as an array of strings).\n"
-    "3. 'suitable_for_junior': whether this job is suitable for a computer science student, junior developer, or someone early in their career.\n\n"
-    "The JSON response should look like this:\n"
-    "{\n"
-    '  "desc": string,\n'
-    '  "reqs": [string, string, ...],\n'
-    '  "suitable_for_junior": "True" | "False" | "Unclear"\n'
-    "}\n\n"
-    "Ensure the result contains only relevant information from the raw text and no extra commentary."
-)
+    prompt = build_junior_classification_prompt(raw_text)
 
     data = {
         "model": model,
@@ -109,20 +113,7 @@ def classify_job_for_juniors(raw_text: str, model: Optional[str] = None, server_
     """
     model = model or LLM_MODEL
 
-    prompt = (
-        f"Here is the raw text extracted from a job listing webpage:\n\n{raw_text}\n\n"
-        "Your task is to extract structured information in JSON format. The JSON must include:\n"
-        "1. 'desc': a concise summary of the job description and responsibilities.\n"
-        "2. 'reqs': a list of required qualifications or skills (as an array of strings).\n"
-        "3. 'suitable_for_junior': whether this job is suitable for a computer science student, junior developer, or someone early in their career.\n\n"
-        "The JSON response should look like this:\n"
-        "{\n"
-        '  "desc": string,\n'
-        '  "reqs": [string, string, ...],\n'
-        '  "suitable_for_junior": "True" | "False" | "Unclear"\n'
-        "}\n\n"
-        "Ensure the result contains only relevant information from the raw text and no extra commentary."
-    )
+    prompt = build_junior_classification_prompt(raw_text)
 
     client = Groq(api_key=LLM_API_KEY)
     response = client.chat.completions.create(

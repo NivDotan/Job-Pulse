@@ -107,9 +107,10 @@ Open-Jobs-Web-Backend/
 │   └── logs/                    # Scraper logs
 ├── DashboardApp/                # Monitoring dashboard
 │   ├── app.py                   # Flask application
+│   ├── DESIGN.md                # Dashboard "Egg" theme / design-system reference
 │   ├── templates/index.html     # Dashboard UI
 │   └── static/                  # CSS/JS assets
-│       ├── css/styles.css       # Dashboard styles (including Today Jobs & admin modal)
+│       ├── css/styles.css       # Dashboard styles — "Egg" light theme (token-driven :root)
 │       └── js/dashboard.js      # Dashboard logic, Supabase auth, Today Jobs, admin panel
 ├── airflow_processes/data/      # Company data files
 │   └── combined_company_data3.json
@@ -460,6 +461,60 @@ If LLM is unavailable:
 2. Other jobs → Sent as "unfiltered" (user should review)
 3. **No jobs are lost** - all new jobs are emailed
 
+### Groq Batch Queue for Free-Plan Limits
+
+`Scrapers/groq_batch_queue.py` adds a Supabase Storage queue for jobs that could not be classified live because Groq returned a quota/rate-limit error. This is for later manual testing with Groq Batch; it does not submit a batch to Groq automatically.
+
+Behavior:
+
+- Successful Groq calls keep the current flow and insert into `desc_reqs_scrapers`.
+- Only Groq limit failures are queued: `groq.RateLimitError`, HTTP/API status `429`, or exception text containing `rate limit`, `quota`, `daily limit`, `too many requests`, or `tokens per`.
+- Scraping errors, parse errors, auth errors, invalid request errors, DB insert errors, and generic network failures are not queued.
+- Current fallback email behavior remains active, so the job can still be emailed even if the live Groq call was rate-limited.
+- Queueing currently happens after clean text extraction for Comeet, Greenhouse, and Workday jobs.
+
+Storage:
+
+| Item | Value |
+|---|---|
+| Bucket | `groq-batch-requests` |
+| Visibility | Private recommended |
+| Daily request JSONL | `YYYY-MM-DD/groq_batch_YYYY-MM-DD.jsonl` |
+| Daily metadata JSONL | `YYYY-MM-DD/groq_batch_YYYY-MM-DD.meta.jsonl` |
+| Smoke request JSONL | `smoke/groq_batch_storage_smoke_YYYY-MM-DD.jsonl` |
+| Smoke metadata JSONL | `smoke/groq_batch_storage_smoke_YYYY-MM-DD.meta.jsonl` |
+
+Supabase Storage does not support true append, so the queue downloads the current object, checks existing `custom_id` values, appends only missing lines, and re-uploads with upsert. The `custom_id` is `job:<sha256(company|job_name|link)>`, which deduplicates repeated scraper runs for the same daily file.
+
+Batch request format:
+
+```json
+{
+  "custom_id": "job:<sha256(company|job_name|link)>",
+  "method": "POST",
+  "url": "/v1/chat/completions",
+  "body": {
+    "model": "llama-3.1-8b-instant",
+    "messages": [{"role": "user", "content": "<same extraction/classification prompt>"}],
+    "temperature": 1,
+    "max_completion_tokens": 1024,
+    "top_p": 1,
+    "stream": false,
+    "response_format": {"type": "json_object"}
+  }
+}
+```
+
+The prompt is centralized in `local_llm_function.build_junior_classification_prompt(raw_text)`, and the model comes from `LLM_MODEL`.
+
+Manual smoke command:
+
+```bash
+python Scrapers/groq_batch_queue.py --smoke
+```
+
+The smoke command writes only to `smoke/`. It needs backend Supabase Storage write permission. Use `SUPABASE_SERVICE_ROLE_KEY` or `supabaseServiceKey`; a public bucket alone does not grant backend insert/update permission and is not recommended for production.
+
 ### Backfill & Testing
 
 - `Scrapers/test_llm_and_backfill.py`:
@@ -493,6 +548,23 @@ If LLM is unavailable:
   - Google sign-in via Supabase Auth.
   - Only the email in `ADMIN_EMAIL` env var can access admin endpoints.
   - Add/update companies in `company_data` directly from the UI.
+
+#### UI Theme — "Egg"
+
+The dashboard uses a warm, light, editorial theme called **Egg**, inspired by
+[jobs.scalefox.ai](https://jobs.scalefox.ai) (it replaced the previous dark "Obsidian Gold"
+theme):
+
+- Off-white `#fafaf7` paper background, white cards with hairline `#e3e1da` borders and soft shadows.
+- A single teal signal accent `#0d9488`.
+- Type system: Inter (body), Raleway (headings), Instrument Serif (big stat numbers), JetBrains Mono (data/labels).
+- `static/css/styles.css` is **token-driven** — the whole look is controlled by the `:root` CSS
+  variables; the original variable names (e.g. `--gold`) were kept for compatibility but now hold
+  teal/light values.
+- **Cache-busting:** when you edit `styles.css` or `dashboard.js`, bump the `?v=` query string on
+  the `<link>`/`<script>` tags in `templates/index.html` (currently `?v=15`) so browsers fetch the
+  updated file.
+- Full design-system reference: **`DashboardApp/DESIGN.md`**.
 
 ### API Endpoints
 
@@ -714,6 +786,14 @@ LLM_API_URL=https://api.groq.com/openai/v1/chat/completions
 LLM_API_KEY=your-groq-api-key
 LLM_MODEL=llama-3.1-8b-instant
 
+# Groq Batch queue in Supabase Storage
+# Keep service-role keys only on backend/server environments.
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+# Optional alternate service-role env name:
+supabaseServiceKey=your-supabase-service-role-key
+GROQ_BATCH_BUCKET=groq-batch-requests
+GROQ_BATCH_QUEUE_DIR=
+
 # Dashboard
 DASHBOARD_PORT=5050
 DASHBOARD_URL=http://localhost:5050
@@ -741,8 +821,9 @@ SUPABASE_JWT_SECRET=your-supabase-jwt-secret
 - Ensure ATS APIs are accessible
 
 #### 2. LLM classification failing
-- Ensure LM Studio is running on port 1234
-- Check model is loaded in LM Studio
+- Verify `LLM_API_KEY` is set for Groq
+- Check Groq quota/rate-limit errors in logs
+- Run `python Scrapers/groq_batch_queue.py --smoke` to validate Supabase Storage queue writes
 - Fallback will still send jobs (as unclassified)
 
 #### 3. Email not sending
@@ -826,10 +907,140 @@ reset_company_failures("monday", "comeet")
 
 ---
 
+## Portfolio Analytics and Standardization
+
+The dashboard now includes a portfolio-grade AI Insights page backed by `GET /api/analytics/portfolio`.
+
+### Purpose
+
+This analytics layer turns messy scraped/enriched job rows into a clean read model for data analysis without changing source Supabase data. It is designed to make the project presentable as a DS/DA portfolio project while keeping raw operational tables intact.
+
+### Source tables
+
+The endpoint reads existing tables only:
+
+| Table | Usage |
+|---|---|
+| `scrapers_data` | Current live jobs snapshot |
+| `desc_reqs_scrapers` | LLM-enriched descriptions and requirements |
+| `emailed_jobs_history` | Jobs sent by email and junior fallback signal |
+| `company_data` | Company count, ATS type, active status, failure health |
+| `scraper_log_runs` | Latest run status and freshness |
+| `us_jobs_history` | Optional future source for US-specific analytics |
+
+### Read-time standardization
+
+`DashboardApp/standardization.py` normalizes analysis-facing fields at request time:
+
+- Company names: trim, display casing, URL/embed artifact cleanup
+- Job titles: normalized separators, seniority extraction, title family, job type
+- Locations: normalized country, city, workplace style, Israel/USA/Other grouping
+- Links: canonical URL generation and tracking parameter removal
+- ATS labels: normalized Greenhouse, Lever, Comeet, Workday, and related labels
+- Junior labels: normalized booleans, `True`/`False`, `Unclear`, and missing values
+- Requirements: JSON-list strings, Python lists, newline text, and semicolon text
+- Descriptions: HTML/entity cleanup, whitespace collapse, preview text
+- Skills: technical taxonomy only for visible skill analytics; soft skills are intentionally excluded
+- Timestamps/statuses: stable ISO-like date/status values
+
+Raw values are still kept inside standardized job records for debugging.
+
+### Portfolio API
+
+Route: `GET /api/analytics/portfolio`
+
+Query params:
+
+| Param | Description |
+|---|---|
+| `start` | Start date, `YYYY-MM-DD` |
+| `end` | End date, `YYYY-MM-DD` |
+| `companies` | Comma-separated company filter |
+| `keyword` | Search text over company, title, location, description, and requirements |
+| `country` | Country filter |
+| `seniority` | Seniority filter |
+| `limit` | Matching job payload limit |
+
+Main response sections:
+
+- `summary`: counts and latest run freshness
+- `funnel`: scraped, standardized, enriched, junior suitable, emailed
+- `skills`: technical-only top requirements
+- `skill_taxonomy`: programming languages, cloud/infrastructure, data analytics, AI/ML, application engineering, security
+- `listing_analysis`: requirement blueprint, seniority matrix, and senior-level lift
+- `job_types`, `experience_levels`, `education`
+- `companies`: top hiring companies and company health
+- `quality`: hidden from the visible UI but still returned for debugging
+- `matching_jobs`: hidden from the visible UI but still useful for API debugging
+
+Default read window is controlled by `PORTFOLIO_ANALYTICS_MAX_ROWS` and currently defaults to `2000` rows per source query to avoid slow dashboard loads.
+
+### AI Insights UI
+
+Files:
+
+- `DashboardApp/templates/index.html`
+- `DashboardApp/static/js/dashboard.js`
+- `DashboardApp/static/css/styles.css`
+
+Visible sections:
+
+- Analysis Filters
+- Technical Demand
+- Requirement Blueprint
+- Seniority Requirement Matrix
+- Senior-Level Lift
+- Programming Languages
+- Cloud & Infrastructure
+- Data & Analytics Tools
+- AI / ML Signals
+- Job Type Breakdown
+- Experience & Education
+- Pipeline Snapshot
+- Top Hiring Companies
+- Company Health
+
+Removed from the visible page:
+
+- Generic KPI strip
+- Daily Trend
+- Country Breakdown
+- Data Quality card
+- Methodology block
+- Standardized Job Samples table
+
+Filter behavior:
+
+- No Apply button.
+- Date/select changes reload immediately.
+- Company/keyword typing reloads after a short debounce.
+- A sticky loading banner, progress track, and card skeleton shimmer show while new data is loading.
+- Stale API responses are ignored so fast filter changes do not overwrite newer results.
+
+### Tests and verification
+
+Added dashboard tests:
+
+- `DashboardApp/tests/test_standardization.py`
+- `DashboardApp/tests/test_portfolio_api.py`
+
+Validation commands:
+
+```bash
+python -m py_compile DashboardApp/standardization.py DashboardApp/analytics.py DashboardApp/app.py
+node --check DashboardApp/static/js/dashboard.js
+python -m pytest DashboardApp/tests -v
+python -m pytest Scrapers/tests -v
+```
+
+---
+
 ## Version History
 
 | Date | Changes |
 |------|---------|
+| 2026-06-11 | Added Supabase Storage Groq Batch-compatible JSONL queue for Groq quota/rate-limit rejections, shared prompt builder, backend service-role Storage smoke test, and queue unit tests |
+| 2026-06-11 | Added portfolio analytics API, read-time standardization module, AI Insights dashboard refresh, technical-only skill taxonomy, seniority requirement analysis, automatic filter reloads, and loading skeleton feedback |
 | 2026-02-25 | Switched LLM to Groq API, added desc_reqs_scrapers table, Render cron deployment with RUN_MODE, Supabase+Google admin panel, Today Jobs dashboard tab, and various helper scripts |
 | 2026-01-24 | Added alerting system, company failure tracking, log cleanup, new ATS support |
 | Initial | Base scraper with Greenhouse, Lever, Comeet, BambooHR, SmartRecruiters |

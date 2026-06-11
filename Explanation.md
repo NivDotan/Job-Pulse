@@ -29,7 +29,7 @@ The Job Scraper System is an automated job aggregation platform that:
 
 ### Key Features
 - Multi-threaded scraping for performance
-- Intelligent job classification using local LLM (LM Studio)
+- Intelligent job classification using Groq API (Llama 3.1 8B by default)
 - Deduplication to avoid sending duplicate jobs
 - Scheduled execution with configurable hours
 - Comprehensive error tracking and alerting
@@ -398,12 +398,12 @@ Jobs are deduplicated daily using Supabase:
 
 ## LLM Integration
 
-### LM Studio Setup
+### Groq Setup
 
-The system uses a local LLM via LM Studio for job classification.
+The current system uses Groq for job classification through `Scrapers/local_llm_function.py`.
 
-**Server:** `http://localhost:1234/v1/chat/completions`
-**Model:** `meta-llama-3.1-8b-instruct` (or similar)
+**Server:** `https://api.groq.com/openai/v1/chat/completions`
+**Model:** `llama-3.1-8b-instant` by default, configurable with `LLM_MODEL`.
 
 ### Classification Logic
 
@@ -422,6 +422,31 @@ If LLM is unavailable:
 1. Jobs with keywords (`student`, `junior`, `intern`, `entry`, `graduate`) → Sent as filtered
 2. Other jobs → Sent as "unfiltered" (user should review)
 3. **No jobs are lost** - all new jobs are emailed
+
+### Groq Batch Queue in Supabase Storage
+
+The current live classifier uses Groq through `Scrapers/local_llm_function.py`. The shared prompt is now built by `build_junior_classification_prompt(raw_text)`, so live classification and queued batch requests use the same extraction/classification prompt and the same `LLM_MODEL` default of `llama-3.1-8b-instant`.
+
+When Groq rejects a live call because the free-plan quota or rate limit was hit, `Scrapers/telegramInsertBot.py` queues the extracted clean job text through `Scrapers/groq_batch_queue.py`. Successful calls still write to `desc_reqs_scrapers`; non-rate-limit failures are not queued and keep the existing fallback email behavior.
+
+Queued failures are written to Supabase Storage bucket `groq-batch-requests`:
+
+- Real daily requests: `YYYY-MM-DD/groq_batch_YYYY-MM-DD.jsonl`
+- Real daily metadata: `YYYY-MM-DD/groq_batch_YYYY-MM-DD.meta.jsonl`
+- Smoke-test requests: `smoke/groq_batch_storage_smoke_YYYY-MM-DD.jsonl`
+- Smoke-test metadata: `smoke/groq_batch_storage_smoke_YYYY-MM-DD.meta.jsonl`
+
+Each request line is Groq Batch-compatible JSONL with `method: "POST"`, `url: "/v1/chat/completions"`, and the same body shape as the live Groq SDK call: `model`, `messages`, `temperature: 1`, `max_completion_tokens: 1024`, `top_p: 1`, `stream: false`, and `response_format: {"type": "json_object"}`.
+
+Supabase Storage has no true append API, so the queue downloads the existing file, deduplicates by `custom_id` (`job:<sha256(company|job_name|link)>`), appends missing lines, and uploads the file again with upsert. The metadata sidecar stores company, job name, city, link, source, `queued_at`, `error_type: "groq_rate_limit"`, and the original error message.
+
+Manual smoke test:
+
+```bash
+python Scrapers/groq_batch_queue.py --smoke
+```
+
+The smoke command writes only to `smoke/`. It needs backend Storage write permissions. `SUPABASE_SERVICE_ROLE_KEY` or `supabaseServiceKey` should be set only on the backend/server; making the bucket public is not enough and is not recommended.
 
 ---
 
@@ -651,8 +676,9 @@ LOG_MIN_KEEP = 10
 - Ensure ATS APIs are accessible
 
 #### 2. LLM classification failing
-- Ensure LM Studio is running on port 1234
-- Check model is loaded in LM Studio
+- Verify `LLM_API_KEY` is set for Groq
+- Check Groq quota/rate-limit errors in logs
+- Run `python Scrapers/groq_batch_queue.py --smoke` to validate Supabase Storage queue writes
 - Fallback will still send jobs (as unclassified)
 
 #### 3. Email not sending
@@ -747,14 +773,9 @@ The dashboard includes an **Analytics** page that reads from Supabase table `des
 3. Set **Start date** and **End date** (defaults: last 30 days).
 4. Optional **Companies**: comma-separated names (e.g. `monday,wix`).
 5. Optional **Keyword**: filters rows where the keyword appears in company, title, description, or requirements text.
-6. Click **Apply**.
+6. Filters reload automatically; there is no Apply button in the current AI Insights page.
 
-You will see:
-
-- KPI cards: total records, unique companies, unique titles, rows with non-empty requirements.
-- **Records trend** chart (daily counts).
-- Tables: top companies, top job titles, top requirement keywords (words extracted from parsed `reqs`).
-- **Matching Jobs (Desc + Reqs)**: when a **keyword** is set, lists matching jobs with full `desc`, parsed `reqs` as text, and link. If no keyword is set, this section prompts you to add one.
+You will see the current portfolio analytics UI described in [Current portfolio analytics behavior](#current-portfolio-analytics-behavior). Older KPI/trend/matching-job sections are no longer visible on the AI Insights page.
 
 ### Query parameters (all analytics routes)
 
@@ -773,7 +794,65 @@ Shared query string (optional unless noted):
 
 - Rows are loaded from `desc_reqs_scrapers` with `created_at` in `[start, end+1 day)` (UTC).
 - **`reqs`** may be stored as a JSON list string, a plain list, or newline/bullet text; the server normalizes before tokenizing for “top requirements”.
-- **`ANALYTICS_MAX_ROWS`**: max rows fetched per analytics request (default **5000**). Increase only if needed; large ranges can be slow.
+- **`ANALYTICS_MAX_ROWS`**: cap for older compatibility analytics endpoints (default **5000**).
+- **`PORTFOLIO_ANALYTICS_MAX_ROWS`**: cap for current portfolio analytics source queries (default **2000**).
+
+### Current portfolio analytics behavior
+
+The current AI Insights page uses `GET /api/analytics/portfolio` as the main visible analytics endpoint. This supersedes the older simple top-companies/top-titles/top-keywords dashboard behavior described above.
+
+Source tables:
+
+- `scrapers_data`
+- `desc_reqs_scrapers`
+- `emailed_jobs_history`
+- `company_data`
+- `scraper_log_runs`
+- optionally `us_jobs_history`
+
+Read-time standardization is implemented in `DashboardApp/standardization.py`. It does not mutate Supabase rows. It normalizes company names, job titles, seniority, title family, job type, locations, links, ATS labels, junior labels, requirements, descriptions, timestamps, and statuses before analysis.
+
+Visible AI Insights sections:
+
+- Technical Demand
+- Requirement Blueprint
+- Seniority Requirement Matrix
+- Senior-Level Lift
+- Programming Languages
+- Cloud & Infrastructure
+- Data & Analytics Tools
+- AI / ML Signals
+- Job Type Breakdown
+- Experience & Education
+- Pipeline Snapshot
+- Top Hiring Companies
+- Company Health
+
+Removed from the visible page:
+
+- Apply button
+- generic KPI strip
+- Daily Trend
+- Country Breakdown
+- Data Quality card
+- Methodology block
+- Standardized Job Samples table
+
+Filter behavior:
+
+- Date and select filters reload immediately.
+- Company and keyword filters reload after a short debounce.
+- The frontend shows a sticky loading banner, progress track, and skeleton shimmer while new data is loading.
+- Stale API responses are ignored so fast filter changes do not overwrite newer data.
+
+Main API response additions:
+
+- `skill_taxonomy`: technical-only categories, with soft skills excluded from visible skill analytics
+- `listing_analysis.requirement_blueprint`: what listings usually request
+- `listing_analysis.seniority_matrix`: how requirements change by seniority level
+- `listing_analysis.seniority_shifts`: requirements more common in senior listings than entry listings
+
+`PORTFOLIO_ANALYTICS_MAX_ROWS` caps portfolio source queries and defaults to `2000`.
 
 ### Client script (cron calling the dashboard URL)
 
@@ -820,5 +899,9 @@ There are two ways to run the scraper on a schedule; both respect **minimum inte
 | `SCRAPER_START_HOUR` / `SCRAPER_END_HOUR` / `SCRAPER_SKIP_DAYS` | Allowed scrape window |
 | `PROJECT_ROOT` | Repo root on Render (set for subprocess scraper) |
 | `ANALYTICS_MAX_ROWS` | Cap for analytics queries (default 5000) |
-
-
+| `PORTFOLIO_ANALYTICS_MAX_ROWS` | Cap for portfolio analytics source queries (default 2000) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only Supabase key used for Storage writes/bucket creation |
+| `supabaseServiceKey` | Optional alternate service-role env name used by the Groq batch queue |
+| `GROQ_BATCH_BUCKET` | Supabase Storage bucket for queued Groq Batch JSONL, default `groq-batch-requests` |
+| `GROQ_BATCH_QUEUE_DIR` | Optional prefix before daily queue folders |
+| `LLM_MODEL` | Groq model used by both live classification and queued batch request bodies |

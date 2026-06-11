@@ -6,10 +6,10 @@
     <title>JobPulse | AI-Powered Job Market Intelligence</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Raleway:wght@500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=14">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=15">
     <script>
         window.__SUPABASE_URL__ = "{{ supabase_url }}";
         window.__SUPABASE_ANON_KEY__ = "{{ supabase_anon_key }}";
@@ -522,8 +522,19 @@
             <div class="page" id="page-analytics">
                 <div class="tab-panel active analytics-page-panel">
 
+                    <section class="analytics-hero">
+                        <div>
+                            <span class="analytics-eyebrow">Portfolio analytics case study</span>
+                            <h2>Real-time Junior Tech Job Market Intelligence</h2>
+                            <p>
+                                A standardized analytics layer over live ATS scrapes, LLM-enriched job descriptions,
+                                requirements, seniority patterns, company health, and email delivery history.
+                            </p>
+                        </div>
+                    </section>
+
                     <section class="dashboard-card analytics-filters-card">
-                        <h3 class="card-title">Filter &amp; Search</h3>
+                        <h3 class="card-title">Analysis Filters</h3>
                         <div class="analytics-filters-grid">
                             <div class="form-group">
                                 <label for="analytics-start-date">Start Date</label>
@@ -541,54 +552,179 @@
                                 <label for="analytics-keyword">Keyword</label>
                                 <input type="text" id="analytics-keyword" placeholder="e.g. python, react">
                             </div>
+                            <div class="form-group">
+                                <label for="analytics-country">Country</label>
+                                <select id="analytics-country">
+                                    <option value="">All countries</option>
+                                    <option value="Israel">Israel</option>
+                                    <option value="United States">United States</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Unknown">Unknown</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="analytics-seniority">Seniority</label>
+                                <select id="analytics-seniority">
+                                    <option value="">All seniority</option>
+                                    <option value="Intern">Intern</option>
+                                    <option value="Entry">Entry</option>
+                                    <option value="Senior">Senior</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Unspecified">Unspecified</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="analytics-actions">
-                            <button id="analytics-apply-btn" class="btn-today">Apply</button>
+                            <span class="analytics-live-note">Filters update automatically</span>
                             <button id="analytics-reset-btn" class="signout-btn">Reset</button>
                         </div>
                         <div id="analytics-error" class="form-message error" style="display:none;"></div>
                     </section>
 
-                    <div class="kpi-row analytics-kpi-row">
-                        <div class="kpi-card">
-                            <div class="kpi-header"><span class="kpi-label">Records</span></div>
-                            <span class="kpi-value" id="analytics-kpi-records">0</span>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-header"><span class="kpi-label">Unique Companies</span></div>
-                            <span class="kpi-value" id="analytics-kpi-companies">0</span>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-header"><span class="kpi-label">Unique Titles</span></div>
-                            <span class="kpi-value" id="analytics-kpi-titles">0</span>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-header"><span class="kpi-label">With Requirements</span></div>
-                            <span class="kpi-value" id="analytics-kpi-with-reqs">0</span>
-                        </div>
+                    <div id="analytics-loading-banner" class="analytics-loading-banner" hidden aria-live="polite">
+                        <span class="analytics-loading-dot"></span>
+                        <span>Updating analysis with the selected filters...</span>
+                        <span class="analytics-loading-track"></span>
                     </div>
 
-                    <div class="charts-row analytics-charts-row">
-                        <section class="dashboard-card chart-card">
-                            <h3 class="card-title">AI Analysis Trend</h3>
-                            <div class="chart-container">
-                                <canvas id="analytics-trend-chart"></canvas>
+                    <div class="portfolio-grid portfolio-grid-main">
+                        <section class="dashboard-card chart-card analytics-primary-chart">
+                            <div class="card-title-row">
+                                <h3 class="card-title">Technical Demand</h3>
+                                <span class="card-note">hard skills only</span>
+                            </div>
+                            <div class="chart-container technical-skills-chart">
+                                <canvas id="portfolio-skills-chart"></canvas>
                             </div>
                         </section>
                         <section class="dashboard-card table-card">
-                            <h3 class="card-title">Top Required Skills</h3>
-                            <div class="table-wrapper">
+                            <div class="card-title-row">
+                                <h3 class="card-title">Requirement Blueprint</h3>
+                                <span class="card-note">what listings usually ask for</span>
+                            </div>
+                            <div class="table-wrapper requirement-blueprint-wrapper">
                                 <table class="jobs-table">
-                                    <thead>
-                                        <tr><th>Skill / Keyword</th><th>Count</th></tr>
-                                    </thead>
-                                    <tbody id="analytics-top-reqs-body">
+                                    <thead><tr><th>Area</th><th>Coverage</th><th>Normalized requirements</th></tr></thead>
+                                    <tbody id="portfolio-blueprint-body">
+                                        <tr><td colspan="3" class="loading-row">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="portfolio-grid portfolio-grid-2 analytics-seniority-grid">
+                        <section class="dashboard-card table-card">
+                            <div class="card-title-row">
+                                <h3 class="card-title">Seniority Requirement Matrix</h3>
+                                <span class="card-note">how required skills change by level</span>
+                            </div>
+                            <div class="table-wrapper seniority-matrix-wrapper">
+                                <table class="jobs-table">
+                                    <thead><tr><th>Seniority</th><th>Jobs</th><th>Years</th><th>Common asks</th><th>Cloud / Data / AI</th><th>Education</th></tr></thead>
+                                    <tbody id="portfolio-seniority-matrix-body">
+                                        <tr><td colspan="6" class="loading-row">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                        <section class="dashboard-card table-card">
+                            <div class="card-title-row">
+                                <h3 class="card-title">Senior-Level Lift</h3>
+                                <span class="card-note">more common in senior listings than entry</span>
+                            </div>
+                            <div class="table-wrapper compact-table-wrapper">
+                                <table class="jobs-table">
+                                    <thead><tr><th>Requirement</th><th>Lift</th><th>Senior</th><th>Entry</th></tr></thead>
+                                    <tbody id="portfolio-seniority-shifts-body">
+                                        <tr><td colspan="4" class="loading-row">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="portfolio-grid portfolio-grid-3">
+                        <section class="dashboard-card table-card">
+                            <h3 class="card-title">Programming Languages</h3>
+                            <div class="table-wrapper compact-table-wrapper">
+                                <table class="jobs-table">
+                                    <thead><tr><th>Language</th><th>Mentions</th></tr></thead>
+                                    <tbody id="portfolio-languages-body">
+                                        <tr><td colspan="2" class="loading-row">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                        <section class="dashboard-card table-card">
+                            <h3 class="card-title">Cloud &amp; Infrastructure</h3>
+                            <div class="table-wrapper compact-table-wrapper">
+                                <table class="jobs-table">
+                                    <thead><tr><th>Technology</th><th>Mentions</th></tr></thead>
+                                    <tbody id="portfolio-cloud-body">
+                                        <tr><td colspan="2" class="loading-row">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                        <section class="dashboard-card table-card">
+                            <h3 class="card-title">Data &amp; Analytics Tools</h3>
+                            <div class="table-wrapper compact-table-wrapper">
+                                <table class="jobs-table">
+                                    <thead><tr><th>Tool / Method</th><th>Mentions</th></tr></thead>
+                                    <tbody id="portfolio-data-tools-body">
                                         <tr><td colspan="2" class="loading-row">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </section>
                     </div>
+
+                    <div class="portfolio-grid portfolio-grid-3">
+                        <section class="dashboard-card table-card">
+                            <h3 class="card-title">AI / ML Signals</h3>
+                            <div class="table-wrapper compact-table-wrapper">
+                                <table class="jobs-table">
+                                    <thead><tr><th>Signal</th><th>Mentions</th></tr></thead>
+                                    <tbody id="portfolio-ai-ml-body">
+                                        <tr><td colspan="2" class="loading-row">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                        <section class="dashboard-card table-card">
+                            <h3 class="card-title">Job Type Breakdown</h3>
+                            <div class="table-wrapper compact-table-wrapper">
+                                <table class="jobs-table">
+                                    <thead><tr><th>Type</th><th>Jobs</th></tr></thead>
+                                    <tbody id="portfolio-job-types-body">
+                                        <tr><td colspan="2" class="loading-row">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                        <section class="dashboard-card table-card">
+                            <h3 class="card-title">Experience &amp; Education</h3>
+                            <div class="table-wrapper compact-table-wrapper">
+                                <table class="jobs-table">
+                                    <thead><tr><th>Bucket</th><th>Jobs</th></tr></thead>
+                                    <tbody id="portfolio-experience-body">
+                                        <tr><td colspan="2" class="loading-row">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section class="dashboard-card table-card analytics-funnel-card">
+                        <div class="card-title-row">
+                            <h3 class="card-title">Pipeline Snapshot</h3>
+                            <span class="card-note">small context, not the main analysis</span>
+                        </div>
+                        <div class="pipeline-strip" id="portfolio-funnel-body">
+                            <div class="pipeline-strip-item"><span>Loading</span><strong>--</strong></div>
+                        </div>
+                    </section>
 
                     <div class="analytics-tables-row">
                         <section class="dashboard-card table-card">
@@ -596,49 +732,29 @@
                             <div class="table-wrapper">
                                 <table class="jobs-table">
                                     <thead>
-                                        <tr><th>Company</th><th>Jobs Analyzed</th></tr>
+                                        <tr><th>Company</th><th>Live Jobs</th></tr>
                                     </thead>
-                                    <tbody id="analytics-top-companies-body">
+                                    <tbody id="portfolio-top-companies-body">
                                         <tr><td colspan="2" class="loading-row">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </section>
                         <section class="dashboard-card table-card">
-                            <h3 class="card-title">Top Job Titles</h3>
+                            <h3 class="card-title">Company Health</h3>
                             <div class="table-wrapper">
                                 <table class="jobs-table">
                                     <thead>
-                                        <tr><th>Title</th><th>Count</th></tr>
+                                        <tr><th>Company</th><th>ATS</th><th>Failures</th><th>Status</th></tr>
                                     </thead>
-                                    <tbody id="analytics-top-titles-body">
-                                        <tr><td colspan="2" class="loading-row">Loading...</td></tr>
+                                    <tbody id="portfolio-company-health-body">
+                                        <tr><td colspan="4" class="loading-row">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </section>
                     </div>
 
-                    <section class="dashboard-card table-card analytics-matching-jobs-card">
-                        <h3 class="card-title">Matching Jobs (Desc + Reqs)</h3>
-                        <div class="table-wrapper">
-                            <table class="jobs-table">
-                                <thead>
-                                    <tr>
-                                        <th>Company</th>
-                                        <th>Job Title</th>
-                                        <th>Created</th>
-                                        <th>Description</th>
-                                        <th>Requirements</th>
-                                        <th>Link</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="analytics-matching-jobs-body">
-                                    <tr><td colspan="6" class="loading-row">Add a keyword and click Apply to search.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
                 </div>
             </div>
         </main>
@@ -710,6 +826,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=14"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=15"></script>
 </body>
 </html>

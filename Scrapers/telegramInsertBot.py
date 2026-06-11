@@ -17,6 +17,7 @@ import requests
 from bs4 import BeautifulSoup
 import html
 import local_llm_function
+import groq_batch_queue
 
 ISRAEL_TZ = ZoneInfo("Asia/Jerusalem")
 
@@ -617,6 +618,15 @@ def filter_today(df: pd.DataFrame) -> pd.DataFrame:
     return df[df['post_date'] == today]
 
 
+def classify_clean_text_for_juniors(clean_text: str, source: str) -> str:
+    try:
+        return local_llm_function.classify_job_for_juniors(clean_text)
+    except Exception as error:
+        if groq_batch_queue.is_groq_rate_limit_error(error):
+            raise groq_batch_queue.GroqBatchQueueCandidate(clean_text, source, error)
+        raise
+
+
 def get_data_from_comeet(url):
     try:
         response = requests.get(url)
@@ -718,7 +728,7 @@ def get_data_from_comeet(url):
         # You would need to define or import it for these lines to work.
         
         print("\n--- Calling LLM function ---")
-        reqs_desc = local_llm_function.classify_job_for_juniors(clean_text)
+        reqs_desc = classify_clean_text_for_juniors(clean_text, "comeet")
         print("reqs_desc:", reqs_desc)
         reqs_desc = json.loads(reqs_desc)
         return reqs_desc
@@ -726,6 +736,8 @@ def get_data_from_comeet(url):
         # Returning the clean_text instead
         #return clean_text
 
+    except groq_batch_queue.GroqBatchQueueCandidate:
+        raise
     except Exception as e:
         print(f"  ❌ An unexpected error occurred: {e}")
         return None
@@ -759,8 +771,10 @@ def get_data_from_workday(url):
                     clean_text = BeautifulSoup(html.unescape(description), "html.parser").get_text(separator="\n")
                     if clean_text.strip():
                         print("  Workday: extracted via JSON-LD")
-                        reqs_desc = local_llm_function.classify_job_for_juniors(clean_text[:4000])
+                        reqs_desc = classify_clean_text_for_juniors(clean_text[:4000], "workday")
                         return json.loads(reqs_desc)
+            except groq_batch_queue.GroqBatchQueueCandidate:
+                raise
             except Exception as e:
                 print(f"  Workday JSON-LD parse error: {e}")
 
@@ -771,7 +785,7 @@ def get_data_from_workday(url):
                 clean_text = div.get_text(separator="\n").strip()
                 if clean_text:
                     print(f"  Workday: extracted via data-automation-id={automation_id}")
-                    reqs_desc = local_llm_function.classify_job_for_juniors(clean_text[:4000])
+                    reqs_desc = classify_clean_text_for_juniors(clean_text[:4000], "workday")
                     return json.loads(reqs_desc)
 
         # 3. Fall back to full page body text
@@ -780,11 +794,13 @@ def get_data_from_workday(url):
             clean_text = body.get_text(separator="\n").strip()
             if len(clean_text) > 200:
                 print("  Workday: falling back to full body text")
-                reqs_desc = local_llm_function.classify_job_for_juniors(clean_text[:4000])
+                reqs_desc = classify_clean_text_for_juniors(clean_text[:4000], "workday")
                 return json.loads(reqs_desc)
 
         return None
 
+    except groq_batch_queue.GroqBatchQueueCandidate:
+        raise
     except Exception as e:
         print(f"  Error fetching Workday job {url}: {e}")
         return None
@@ -822,7 +838,7 @@ def get_data_from_greenhouse(url):
         plain_text = soup.get_text(separator="").strip()
         
         print(plain_text)
-        reqs_desc = local_llm_function.classify_job_for_juniors(plain_text)
+        reqs_desc = classify_clean_text_for_juniors(plain_text, "greenhouse")
         print("reqs_desc:", reqs_desc)
         reqs_desc = json.loads(reqs_desc)
 
@@ -992,6 +1008,22 @@ def test(data_array):
                 reqs_desc = get_data_from_greenhouse(f'{i["link"]}')
             elif 'myworkdayjobs.com' in i['link']:
                 reqs_desc = get_data_from_workday(i['link'])
+        except groq_batch_queue.GroqBatchQueueCandidate as e:
+            print(f"Groq rate limit hit for {i['company']} - {i['job_name']}; queueing for batch")
+            try:
+                queue_result = groq_batch_queue.queue_rate_limited_job(
+                    raw_text=e.raw_text,
+                    company=i.get("company", ""),
+                    job_name=i.get("job_name", ""),
+                    city=i.get("city_y", "") or i.get("city", ""),
+                    link=i.get("link", ""),
+                    source=e.source,
+                    error=e.original_error,
+                )
+                print(f"Groq batch queue result: {queue_result}")
+            except Exception as queue_error:
+                print(f"Error queueing Groq batch request for {i['company']}: {queue_error}")
+            reqs_desc = None
         except Exception as e:
             print(f"Error fetching job details for {i['company']}: {e}")
             reqs_desc = None

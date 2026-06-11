@@ -10,6 +10,9 @@ console.log('=== Dashboard JS loaded - Version 7.0 ===');
 let pipelineChart = null;
 let companiesBarChart = null;
 let analyticsTrendChart = null;
+let portfolioFunnelChart = null;
+let portfolioSkillsChart = null;
+let portfolioLocationChart = null;
 
 const chartColors = {
     gold:    '#c9a847',
@@ -112,6 +115,9 @@ function resizeVisibleCharts() {
     if (pipelineChart) pipelineChart.resize();
     if (companiesBarChart) companiesBarChart.resize();
     if (analyticsTrendChart) analyticsTrendChart.resize();
+    if (portfolioFunnelChart) portfolioFunnelChart.resize();
+    if (portfolioSkillsChart) portfolioSkillsChart.resize();
+    if (portfolioLocationChart) portfolioLocationChart.resize();
 }
 
 /* ============================================
@@ -1013,7 +1019,11 @@ const analyticsState = {
     end: '',
     companies: '',
     keyword: '',
+    country: '',
+    seniority: '',
 };
+let analyticsFilterTimer = null;
+let analyticsRequestSeq = 0;
 
 function initAnalytics() {
     const today = new Date();
@@ -1024,36 +1034,56 @@ function initAnalytics() {
     const endInput = document.getElementById('analytics-end-date');
     const companiesInput = document.getElementById('analytics-companies');
     const keywordInput = document.getElementById('analytics-keyword');
-    const applyBtn = document.getElementById('analytics-apply-btn');
+    const countryInput = document.getElementById('analytics-country');
+    const seniorityInput = document.getElementById('analytics-seniority');
     const resetBtn = document.getElementById('analytics-reset-btn');
 
-    if (!startInput || !endInput || !applyBtn || !resetBtn) return;
+    if (!startInput || !endInput || !resetBtn) return;
 
-    analyticsState.start = start.toISOString().split('T')[0];
-    analyticsState.end = today.toISOString().split('T')[0];
+    analyticsState.start = formatLocalDate(start);
+    analyticsState.end = formatLocalDate(today);
     startInput.value = analyticsState.start;
     endInput.value = analyticsState.end;
 
-    if (applyBtn) {
-        applyBtn.addEventListener('click', async () => {
-            analyticsState.start = startInput.value || analyticsState.start;
-            analyticsState.end = endInput.value || analyticsState.end;
-            analyticsState.companies = companiesInput ? companiesInput.value.trim() : '';
-            analyticsState.keyword = keywordInput ? keywordInput.value.trim() : '';
-            await loadAnalyticsData();
-        });
-    }
+    const syncAnalyticsFilters = () => {
+        analyticsState.start = startInput.value || analyticsState.start;
+        analyticsState.end = endInput.value || analyticsState.end;
+        analyticsState.companies = companiesInput ? companiesInput.value.trim() : '';
+        analyticsState.keyword = keywordInput ? keywordInput.value.trim() : '';
+        analyticsState.country = countryInput ? countryInput.value : '';
+        analyticsState.seniority = seniorityInput ? seniorityInput.value : '';
+    };
+
+    const scheduleAnalyticsReload = (delay = 250) => {
+        syncAnalyticsFilters();
+        clearTimeout(analyticsFilterTimer);
+        analyticsFilterTimer = setTimeout(() => {
+            loadAnalyticsData();
+        }, delay);
+    };
+
+    [startInput, endInput, countryInput, seniorityInput].forEach(input => {
+        if (input) input.addEventListener('change', () => scheduleAnalyticsReload(0));
+    });
+    [companiesInput, keywordInput].forEach(input => {
+        if (input) input.addEventListener('input', () => scheduleAnalyticsReload(450));
+    });
 
     if (resetBtn) {
         resetBtn.addEventListener('click', async () => {
-            analyticsState.start = start.toISOString().split('T')[0];
-            analyticsState.end = today.toISOString().split('T')[0];
+            analyticsState.start = formatLocalDate(start);
+            analyticsState.end = formatLocalDate(today);
             analyticsState.companies = '';
             analyticsState.keyword = '';
+            analyticsState.country = '';
+            analyticsState.seniority = '';
             startInput.value = analyticsState.start;
             endInput.value = analyticsState.end;
             if (companiesInput) companiesInput.value = '';
             if (keywordInput) keywordInput.value = '';
+            if (countryInput) countryInput.value = '';
+            if (seniorityInput) seniorityInput.value = '';
+            clearTimeout(analyticsFilterTimer);
             await loadAnalyticsData();
         });
     }
@@ -1065,10 +1095,14 @@ function buildAnalyticsQuery() {
     if (analyticsState.end) params.set('end', analyticsState.end);
     if (analyticsState.companies) params.set('companies', analyticsState.companies);
     if (analyticsState.keyword) params.set('keyword', analyticsState.keyword);
+    if (analyticsState.country) params.set('country', analyticsState.country);
+    if (analyticsState.seniority) params.set('seniority', analyticsState.seniority);
+    params.set('limit', '50');
     return params.toString();
 }
 
 async function loadAnalyticsData() {
+    const requestId = ++analyticsRequestSeq;
     const errorEl = document.getElementById('analytics-error');
     if (errorEl) {
         errorEl.style.display = 'none';
@@ -1076,36 +1110,78 @@ async function loadAnalyticsData() {
     }
 
     const query = buildAnalyticsQuery();
+    setAnalyticsLoading(true);
     try {
-        const [overviewRes, companiesRes, titlesRes, reqsRes, trendRes, matchesRes] = await Promise.all([
-            fetchAPI('/api/analytics/overview?' + query),
-            fetchAPI('/api/analytics/top-companies?' + query),
-            fetchAPI('/api/analytics/top-titles?' + query),
-            fetchAPI('/api/analytics/top-requirements?' + query),
-            fetchAPI('/api/analytics/trend?' + query),
-            fetchAPI('/api/analytics/matching-jobs?' + query),
-        ]);
-
-        updateAnalyticsOverview(overviewRes.overview || {});
-        updateAnalyticsTable('analytics-top-companies-body', companiesRes.items || [], 'company');
-        updateAnalyticsTable('analytics-top-titles-body', titlesRes.items || [], 'title');
-        updateAnalyticsTable('analytics-top-reqs-body', reqsRes.items || [], 'term');
-        updateAnalyticsTrend(trendRes.items || []);
-        updateAnalyticsMatchingJobs(matchesRes.items || []);
+        const data = await fetchAPI('/api/analytics/portfolio?' + query);
+        if (requestId !== analyticsRequestSeq) return;
+        updatePortfolioAnalytics(data || {});
     } catch (error) {
+        if (requestId !== analyticsRequestSeq) return;
         console.error('Analytics load error:', error);
         if (errorEl) {
             errorEl.textContent = 'Failed to load analytics data: ' + error.message;
             errorEl.style.display = 'block';
         }
+    } finally {
+        if (requestId === analyticsRequestSeq) {
+            setAnalyticsLoading(false);
+        }
     }
 }
 
+function setAnalyticsLoading(isLoading) {
+    const panel = document.querySelector('#page-analytics .analytics-page-panel');
+    const banner = document.getElementById('analytics-loading-banner');
+    if (panel) panel.classList.toggle('analytics-loading', isLoading);
+    if (banner) {
+        banner.hidden = !isLoading;
+        banner.setAttribute('aria-hidden', String(!isLoading));
+    }
+}
+
+function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function updatePortfolioAnalytics(data) {
+    const summary = data.summary || {};
+    const quality = data.quality || {};
+    const companies = data.companies || {};
+    const taxonomy = data.skill_taxonomy || {};
+
+    setText('portfolio-live-jobs', formatNumber(summary.live_jobs || 0));
+    setText('portfolio-analyzed-jobs', formatNumber(summary.analyzed_jobs || 0));
+    setText('portfolio-junior-jobs', formatNumber(summary.junior_suitable_jobs || 0));
+    setText('portfolio-companies-monitored', formatNumber(summary.companies_monitored || 0));
+    setText('portfolio-emailed-jobs', formatNumber(summary.emailed_jobs || 0));
+    setText('portfolio-quality-score', `${quality.score || 0}`);
+    setText('portfolio-freshness', summary.freshness_hours === null || summary.freshness_hours === undefined ? '--' : `${summary.freshness_hours}h`);
+
+    updatePortfolioFunnel(data.funnel || []);
+    updatePortfolioSkills(buildTechnicalSkillList(taxonomy, data.skills || []));
+    updateListingAnalysis(data.listing_analysis || {});
+    updateCategoryTable('portfolio-languages-body', taxonomy.programming_languages || [], 'term', 'count', 'No language signals found.');
+    updateCategoryTable('portfolio-cloud-body', taxonomy.cloud_infrastructure || [], 'term', 'count', 'No cloud or infrastructure signals found.');
+    updateCategoryTable('portfolio-data-tools-body', taxonomy.data_analytics || [], 'term', 'count', 'No data tooling signals found.');
+    updateCategoryTable('portfolio-ai-ml-body', taxonomy.ai_ml || [], 'term', 'count', 'No AI/ML signals found.');
+    updateCategoryTable('portfolio-job-types-body', data.job_types || [], 'job_type', 'count', 'No job type data found.');
+    updateExperienceEducation(data.experience_levels || [], data.education || []);
+    updatePortfolioCompanies(companies.top_hiring || []);
+    updatePortfolioHealth(companies.health || []);
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
 function updateAnalyticsOverview(overview) {
-    document.getElementById('analytics-kpi-records').textContent = formatNumber(overview.total_records || 0);
-    document.getElementById('analytics-kpi-companies').textContent = formatNumber(overview.unique_companies || 0);
-    document.getElementById('analytics-kpi-titles').textContent = formatNumber(overview.unique_titles || 0);
-    document.getElementById('analytics-kpi-with-reqs').textContent = formatNumber(overview.rows_with_requirements || 0);
+    setText('portfolio-live-jobs', formatNumber(overview.total_records || 0));
+    setText('portfolio-analyzed-jobs', formatNumber(overview.rows_with_requirements || 0));
+    setText('portfolio-companies-monitored', formatNumber(overview.unique_companies || 0));
 }
 
 function updateAnalyticsTable(tbodyId, items, labelKey) {
@@ -1128,11 +1204,20 @@ function updateAnalyticsTrend(items) {
     if (!canvas) return;
 
     const labels = (items || []).map(i => i.date || '');
-    const values = (items || []).map(i => i.count || 0);
+    const liveValues = (items || []).map(i => i.live_jobs ?? i.count ?? 0);
+    const enrichedValues = (items || []).map(i => i.enriched_jobs || 0);
+    const juniorValues = (items || []).map(i => i.junior_jobs || 0);
+
+    if (analyticsTrendChart && analyticsTrendChart.data.datasets.length < 3) {
+        analyticsTrendChart.destroy();
+        analyticsTrendChart = null;
+    }
 
     if (analyticsTrendChart) {
         analyticsTrendChart.data.labels = labels;
-        analyticsTrendChart.data.datasets[0].data = values;
+        analyticsTrendChart.data.datasets[0].data = liveValues;
+        analyticsTrendChart.data.datasets[1].data = enrichedValues;
+        analyticsTrendChart.data.datasets[2].data = juniorValues;
         analyticsTrendChart.update();
         return;
     }
@@ -1141,28 +1226,50 @@ function updateAnalyticsTrend(items) {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Records',
-                data: values,
-                borderColor: chartColors.blue,
-                backgroundColor: 'rgba(67, 97, 238, 0.12)',
-                fill: true,
-                tension: 0.3,
-                borderWidth: 2,
-                pointRadius: 3,
-            }]
+            datasets: [
+                {
+                    label: 'Live Jobs',
+                    data: liveValues,
+                    borderColor: chartColors.gold,
+                    backgroundColor: 'rgba(201, 168, 71, 0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                },
+                {
+                    label: 'LLM Enriched',
+                    data: enrichedValues,
+                    borderColor: chartColors.blue,
+                    backgroundColor: 'rgba(107, 157, 242, 0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                },
+                {
+                    label: 'Junior Suitable',
+                    data: juniorValues,
+                    borderColor: chartColors.green,
+                    backgroundColor: 'rgba(52, 208, 88, 0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: { color: '#9ca3af' }
+                    labels: { color: '#75716a' }
                 }
             },
             scales: {
-                x: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(38,38,38,0.8)' } },
-                y: { beginAtZero: true, ticks: { color: '#6b7280' }, grid: { color: 'rgba(38,38,38,0.8)' } }
+                x: { ticks: { color: '#75716a' }, grid: { color: 'rgba(10,10,10,0.06)' } },
+                y: { beginAtZero: true, ticks: { color: '#75716a' }, grid: { color: 'rgba(10,10,10,0.06)' } }
             }
         }
     });
@@ -1172,30 +1279,310 @@ function updateAnalyticsMatchingJobs(items) {
     const tbody = document.getElementById('analytics-matching-jobs-body');
     if (!tbody) return;
 
-    if (!analyticsState.keyword) {
-        tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Add a keyword and click Apply to inspect matching jobs.</td></tr>';
-        return;
-    }
-
     if (!items || items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="loading-row">No jobs matched this keyword for the selected filters.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="loading-row">No standardized jobs matched the selected filters.</td></tr>';
         return;
     }
 
     tbody.innerHTML = items.map((item) => {
-        const created = item.created_at ? new Date(item.created_at).toLocaleString() : '';
-        const reqs = Array.isArray(item.reqs) ? item.reqs.filter(Boolean).join('; ') : '';
+        const reqs = Array.isArray(item.requirements) ? item.requirements.filter(Boolean).slice(0, 3).join('; ') : '';
         return `
             <tr>
                 <td>${escapeHtml(item.company || '')}</td>
                 <td>${escapeHtml(item.job_title || '')}</td>
-                <td>${escapeHtml(created)}</td>
-                <td class="analytics-long-cell">${escapeHtml(item.desc || '')}</td>
+                <td>${escapeHtml(item.job_type || '')}</td>
+                <td>${escapeHtml(item.seniority || '')}</td>
+                <td>${escapeHtml(item.country || '')}</td>
+                <td><span class="status-pill ${portfolioJuniorClass(item.junior_label)}">${escapeHtml(item.junior_label || 'Unknown')}</span></td>
+                <td class="analytics-long-cell">${escapeHtml(item.description_preview || '')}</td>
                 <td class="analytics-long-cell">${escapeHtml(reqs)}</td>
                 <td>${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" class="job-link">Open →</a>` : ''}</td>
             </tr>
         `;
     }).join('');
+}
+
+function portfolioJuniorClass(label) {
+    if (label === 'Junior') return 'success';
+    if (label === 'Unclear') return 'warning';
+    if (label === 'Not Junior') return 'failed';
+    return 'warning';
+}
+
+function updatePortfolioFunnel(items) {
+    const container = document.getElementById('portfolio-funnel-body');
+    if (!container) return;
+    if (!items || items.length === 0) {
+        container.innerHTML = '<div class="pipeline-strip-item"><span>No funnel data</span><strong>0</strong></div>';
+        return;
+    }
+    container.innerHTML = items.map(item => `
+        <div class="pipeline-strip-item">
+            <span>${escapeHtml(item.stage || '')}</span>
+            <strong>${formatNumber(item.count || 0)}</strong>
+        </div>
+    `).join('');
+}
+
+function updatePortfolioSkills(items) {
+    const canvas = document.getElementById('portfolio-skills-chart');
+    if (!canvas) return;
+    const top = items.slice(0, 10).reverse();
+    const labels = top.map(i => i.term || '');
+    const values = top.map(i => i.count || 0);
+    if (portfolioSkillsChart) {
+        portfolioSkillsChart.data.labels = labels;
+        portfolioSkillsChart.data.datasets[0].data = values;
+        portfolioSkillsChart.update();
+        return;
+    }
+    portfolioSkillsChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Mentions',
+                data: values,
+                backgroundColor: 'rgba(201, 168, 71, 0.72)',
+                borderRadius: 5,
+            }]
+        },
+        options: portfolioBarOptions(true)
+    });
+}
+
+function buildTechnicalSkillList(taxonomy, fallbackSkills) {
+    const technicalCategories = [
+        'programming_languages',
+        'cloud_infrastructure',
+        'data_analytics',
+        'ai_ml',
+        'frontend_backend',
+        'security',
+    ];
+    const merged = new Map();
+    technicalCategories.forEach(category => {
+        (taxonomy[category] || []).forEach(item => {
+            const term = item.term || '';
+            if (!term) return;
+            merged.set(term, (merged.get(term) || 0) + (item.count || 0));
+        });
+    });
+    const fromTaxonomy = Array.from(merged.entries())
+        .map(([term, count]) => ({ term, count }))
+        .sort((a, b) => b.count - a.count || a.term.localeCompare(b.term));
+    return fromTaxonomy.length ? fromTaxonomy : (fallbackSkills || []);
+}
+
+function updateListingAnalysis(analysis) {
+    updateRequirementBlueprint(analysis.requirement_blueprint || []);
+    updateSeniorityMatrix(analysis.seniority_matrix || []);
+    updateSeniorityShifts(analysis.seniority_shifts || []);
+}
+
+function renderTermChips(items, limit = 5) {
+    const top = (items || []).filter(Boolean).slice(0, limit);
+    if (!top.length) return '<span class="muted-inline">No signal</span>';
+    return top.map(item => `
+        <span class="term-chip">${escapeHtml(item.term || item.level || '')}<small>${formatNumber(item.count || 0)}</small></span>
+    `).join('');
+}
+
+function updateRequirementBlueprint(items) {
+    const tbody = document.getElementById('portfolio-blueprint-body');
+    if (!tbody) return;
+    if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="loading-row">No requirement blueprint found for selected filters.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = items.map(item => `
+        <tr>
+            <td>${escapeHtml(item.category || '')}</td>
+            <td>
+                <strong>${formatNumber(item.listing_count || 0)}</strong>
+                <span class="muted-inline">${item.coverage_pct || 0}% of listings</span>
+            </td>
+            <td class="analytics-long-cell">${renderTermChips(item.top_terms || [], 6)}</td>
+        </tr>
+    `).join('');
+}
+
+function updateSeniorityMatrix(items) {
+    const tbody = document.getElementById('portfolio-seniority-matrix-body');
+    if (!tbody) return;
+    if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="loading-row">No seniority analysis found for selected filters.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = items.map(item => {
+        const technical = renderTermChips(item.top_skills || [], 4);
+        const infra = [
+            ...(item.top_cloud || []).slice(0, 2),
+            ...(item.top_data || []).slice(0, 2),
+            ...(item.top_ai_ml || []).slice(0, 2),
+        ];
+        return `
+            <tr>
+                <td><strong>${escapeHtml(item.seniority || '')}</strong></td>
+                <td>${formatNumber(item.jobs || 0)}</td>
+                <td>${item.avg_min_years === null || item.avg_min_years === undefined ? 'Not stated' : `${item.avg_min_years}+`}</td>
+                <td class="analytics-long-cell">${technical}</td>
+                <td class="analytics-long-cell">${renderTermChips(infra, 5)}</td>
+                <td class="analytics-long-cell">${renderTermChips(item.top_education || [], 3)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function updateSeniorityShifts(items) {
+    const tbody = document.getElementById('portfolio-seniority-shifts-body');
+    if (!tbody) return;
+    if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Need both entry and senior listings to calculate senior-level lift.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = items.map(item => `
+        <tr>
+            <td>${escapeHtml(item.term || '')}</td>
+            <td><strong>+${item.senior_lift_pct || 0}%</strong></td>
+            <td>${formatNumber(item.senior_count || 0)}</td>
+            <td>${formatNumber(item.entry_count || 0)}</td>
+        </tr>
+    `).join('');
+}
+
+function updatePortfolioLocations(items) {
+    const canvas = document.getElementById('portfolio-location-chart');
+    if (!canvas) return;
+    const labels = items.map(i => i.country || '');
+    const values = items.map(i => i.count || 0);
+    if (portfolioLocationChart) {
+        portfolioLocationChart.data.labels = labels;
+        portfolioLocationChart.data.datasets[0].data = values;
+        portfolioLocationChart.update();
+        return;
+    }
+    portfolioLocationChart = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{
+                data: values,
+                backgroundColor: ['#c9a847', '#6b9df2', '#8b7cc8', '#e07a50', '#524e5d'],
+                borderColor: '#141118',
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#9ca3af' } }
+            }
+        }
+    });
+}
+
+function portfolioBarOptions(horizontal) {
+    return {
+        indexAxis: horizontal ? 'y' : 'x',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#ffffff',
+                titleColor: '#0a0a0a',
+                bodyColor: '#75716a',
+                borderColor: '#e3e1da',
+                borderWidth: 1,
+            }
+        },
+        scales: {
+            x: { beginAtZero: true, ticks: { color: '#75716a' }, grid: { color: 'rgba(10,10,10,0.06)' } },
+            y: { beginAtZero: true, ticks: { color: '#75716a' }, grid: { color: 'rgba(10,10,10,0.06)' } }
+        }
+    };
+}
+
+function updatePortfolioQuality(quality) {
+    const container = document.getElementById('portfolio-quality-list');
+    if (!container) return;
+    const items = [
+        ['Missing descriptions', quality.missing_descriptions || 0],
+        ['Missing requirements', quality.missing_requirements || 0],
+        ['Duplicate canonical links', quality.duplicate_links || 0],
+        ['Unknown locations', quality.unknown_locations || 0],
+        ['Unknown junior labels', quality.unknown_junior_labels || 0],
+        ['Invalid links', quality.invalid_links || 0],
+    ];
+    container.innerHTML = items.map(([label, value]) => `
+        <div class="quality-row">
+            <span>${escapeHtml(label)}</span>
+            <strong>${formatNumber(value)}</strong>
+        </div>
+    `).join('');
+}
+
+function updateCategoryTable(tbodyId, items, labelKey, valueKey, emptyText) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    if (!items || items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" class="loading-row">${escapeHtml(emptyText || 'No data.')}</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = items.slice(0, 12).map(item => `
+        <tr>
+            <td>${escapeHtml(item[labelKey] || '')}</td>
+            <td>${formatNumber(item[valueKey] || 0)}</td>
+        </tr>
+    `).join('');
+}
+
+function updateExperienceEducation(experienceItems, educationItems) {
+    const combined = [
+        ...(experienceItems || []).map(item => ({ label: `Experience: ${item.level}`, count: item.count })),
+        ...(educationItems || []).map(item => ({ label: `Education: ${item.level}`, count: item.count })),
+    ];
+    updateCategoryTable('portfolio-experience-body', combined, 'label', 'count', 'No experience or education signals found.');
+}
+
+function updatePortfolioCompanies(items) {
+    const tbody = document.getElementById('portfolio-top-companies-body');
+    if (!tbody) return;
+    if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" class="loading-row">No company data for selected filters.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = items.slice(0, 12).map(item => `
+        <tr>
+            <td>${escapeHtml(item.company || '')}</td>
+            <td>${formatNumber(item.count || 0)}</td>
+        </tr>
+    `).join('');
+}
+
+function updatePortfolioHealth(items) {
+    const tbody = document.getElementById('portfolio-company-health-body');
+    if (!tbody) return;
+    if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="loading-row">No company health data available.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = items.slice(0, 12).map(item => `
+        <tr>
+            <td>${escapeHtml(item.company || '')}</td>
+            <td>${escapeHtml(item.ats || '')}</td>
+            <td>${formatNumber(item.consecutive_failures || 0)}</td>
+            <td><span class="status-pill ${item.active ? 'success' : 'failed'}">${item.active ? 'Active' : 'Inactive'}</span></td>
+        </tr>
+    `).join('');
+}
+
+function updatePortfolioMethodology(items) {
+    const container = document.getElementById('portfolio-methodology');
+    if (!container) return;
+    container.innerHTML = (items || []).map(item => `<p>${escapeHtml(item)}</p>`).join('');
 }
 
 /* ============================================

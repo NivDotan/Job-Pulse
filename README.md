@@ -95,6 +95,119 @@ DashboardApp/
 
 ---
 
+## Portfolio Analytics Dashboard
+
+The AI Insights page is now a portfolio-style DS/DA dashboard backed by `GET /api/analytics/portfolio`.
+
+### What it analyzes
+
+- Live scraped jobs from `scrapers_data`
+- LLM-enriched descriptions and requirements from `desc_reqs_scrapers`
+- Email delivery history from `emailed_jobs_history`
+- Company health from `company_data`
+- Latest run metadata from `scraper_log_runs`
+- `us_jobs_history` remains optional where available
+
+### Read-time standardization
+
+The dashboard does not backfill or mutate Supabase rows. It standardizes messy data at read time in `DashboardApp/standardization.py` before analytics run:
+
+- Company names: trims artifacts and produces stable display/normalized names
+- Titles: normalizes separators, seniority terms, title family, and job type
+- Locations: normalizes city/country/workplace signals
+- Links: canonicalizes URLs and removes tracking fragments
+- ATS names: normalizes source labels such as Greenhouse, Lever, Comeet, Workday
+- Junior labels: normalizes booleans, text labels, unclear values, and missing values
+- Requirements: parses JSON-list strings, Python lists, newline text, and semicolon text
+- Descriptions: strips HTML/entities, collapses whitespace, and creates clean previews
+- Skills: extracts technical-only taxonomy and excludes soft skills from public skill charts
+- Timestamps/statuses: normalizes dates and run statuses for stable analytics
+
+### Visible analysis
+
+The AI Insights page now focuses on:
+
+- Analysis filters that update automatically without an Apply button
+- Loading feedback while new filter data is fetched: sticky banner, moving progress track, and card skeleton shimmer
+- Technical Demand chart for hard skills only
+- Requirement Blueprint showing what listings usually request and how often
+- Seniority Requirement Matrix showing how requirements change by Entry, Mid, Senior, and Unspecified levels
+- Senior-Level Lift showing requirements more common in senior listings than entry listings
+- Programming languages, cloud/infrastructure, data/analytics tools, AI/ML signals, job type breakdown, experience/education, top companies, and company health
+
+Removed from the visible AI Insights page: generic KPI strip, Daily Trend, Country Breakdown, Data Quality card, Methodology text, and Standardized Job Samples table.
+
+### API
+
+`GET /api/analytics/portfolio`
+
+Query params:
+
+| Param | Description |
+|---|---|
+| `start` | Start date, `YYYY-MM-DD` |
+| `end` | End date, `YYYY-MM-DD` |
+| `companies` | Comma-separated company filter |
+| `keyword` | Search term over company, title, location, description, and requirements |
+| `country` | Country filter |
+| `seniority` | Seniority filter |
+| `limit` | Matching-job payload limit, capped by the API |
+
+Response includes `summary`, `funnel`, `skills`, `skill_taxonomy`, `listing_analysis`, `job_types`, `experience_levels`, `education`, `locations`, `companies`, `quality`, `matching_jobs`, and `methodology`.
+
+---
+
+## Groq Batch Queue in Supabase Storage
+
+When the live Groq call is rejected because the free-plan quota or rate limit was hit, the scraper now queues that job as a Groq Batch-compatible JSONL request in Supabase Storage. Successful Groq calls still write to `desc_reqs_scrapers`, and non-rate-limit failures keep the existing email fallback without being queued.
+
+Implemented files:
+
+- `Scrapers/groq_batch_queue.py` builds/deduplicates JSONL requests and uploads them to Supabase Storage
+- `Scrapers/local_llm_function.py` exposes `build_junior_classification_prompt(raw_text)` so live calls and batch requests use the same prompt
+- `Scrapers/telegramInsertBot.py` queues only Comeet, Greenhouse, and Workday jobs where clean text was extracted and Groq hit a quota/rate-limit error
+- `Scrapers/tests/test_groq_batch_queue.py` covers JSONL shape, prompt/model matching, rate-limit detection, dedupe, metadata sidecar, and smoke paths
+
+Storage details:
+
+| Item | Value |
+|---|---|
+| Bucket | `groq-batch-requests` |
+| Recommended visibility | Private |
+| Daily request object | `YYYY-MM-DD/groq_batch_YYYY-MM-DD.jsonl` |
+| Daily metadata object | `YYYY-MM-DD/groq_batch_YYYY-MM-DD.meta.jsonl` |
+| Smoke request object | `smoke/groq_batch_storage_smoke_YYYY-MM-DD.jsonl` |
+| Smoke metadata object | `smoke/groq_batch_storage_smoke_YYYY-MM-DD.meta.jsonl` |
+
+Supabase Storage does not have a true append API, so the queue downloads the existing object, skips any existing `custom_id`, appends missing JSONL lines, and re-uploads with upsert enabled. `custom_id` is `job:<sha256(company|job_name|link)>`.
+
+The queued request body matches the current sync Groq call: model from `LLM_MODEL` (default `llama-3.1-8b-instant`), `POST /v1/chat/completions`, one user message with the same classification prompt, `temperature: 1`, `max_completion_tokens: 1024`, `top_p: 1`, `stream: false`, and `response_format: {"type": "json_object"}`.
+
+Manual storage smoke test:
+
+```bash
+python Scrapers/groq_batch_queue.py --smoke
+```
+
+The smoke test writes only under `smoke/`, not to the real rejected-jobs daily batch file. It requires backend Supabase Storage write permission. Use `SUPABASE_SERVICE_ROLE_KEY` or `supabaseServiceKey` on the server side; a public bucket alone is not enough and is not recommended for production.
+
+### Dashboard design — "Egg" theme
+
+The dashboard UI uses a warm, light, editorial theme called **Egg** (inspired by
+[jobs.scalefox.ai](https://jobs.scalefox.ai)) — off-white paper background, white cards
+with hairline borders, a single teal signal accent (`#0d9488`), and an
+Inter / Raleway / Instrument Serif type system. It replaced the older dark "Obsidian Gold"
+theme.
+
+The stylesheet (`DashboardApp/static/css/styles.css`) is token-driven, so the whole look
+is controlled by the `:root` CSS variables. Full details — palette, fonts, what changed,
+and how to retune it — are in **[`DashboardApp/DESIGN.md`](DashboardApp/DESIGN.md)**.
+
+> When editing `styles.css` or `dashboard.js`, bump the `?v=` cache-bust version on the
+> `<link>`/`<script>` tags in `DashboardApp/templates/index.html`.
+
+---
+
 ## Quick Start
 
 ```bash
@@ -105,7 +218,8 @@ pip install -r requirements.txt
 
 # 2. Configure environment
 cp .env.example .env
-# Fill in SUPABASE_URL, SUPABASE_KEY, GROQ_API_KEY, EMAIL_*, etc.
+# Fill in supabaseUrl/supabaseKey, LLM_API_KEY, EMAIL_*, etc.
+# Add SUPABASE_SERVICE_ROLE_KEY on backend/server env if using the Groq batch Storage queue.
 
 # 3. Run once (cron mode)
 RUN_MODE=cron python CleanScript.py
@@ -199,6 +313,29 @@ cd Scrapers
 pytest tests/ -v
 ```
 
+Dashboard analytics tests:
+
+```bash
+python -m pytest DashboardApp/tests -v
+```
+
+Recent verification for the portfolio analytics work:
+
+```bash
+python -m py_compile DashboardApp/standardization.py DashboardApp/analytics.py DashboardApp/app.py
+node --check DashboardApp/static/js/dashboard.js
+python -m pytest DashboardApp/tests -v
+python -m pytest Scrapers/tests -v
+```
+
+Groq batch queue verification:
+
+```bash
+python -m py_compile Scrapers/local_llm_function.py Scrapers/telegramInsertBot.py Scrapers/groq_batch_queue.py
+python -m pytest Scrapers/tests -v
+python Scrapers/groq_batch_queue.py --smoke
+```
+
 ---
 
 ## Environment Variables
@@ -207,7 +344,15 @@ pytest tests/ -v
 |---|---|
 | `SUPABASE_URL` | Supabase project URL |
 | `SUPABASE_KEY` | Supabase anon/service key |
+| `supabaseUrl` | Supabase project URL used by scraper modules |
+| `supabaseKey` | Supabase key used by existing scraper modules |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only Supabase service-role key for Storage writes and bucket creation |
+| `supabaseServiceKey` | Optional alternate server-only service-role env name |
 | `GROQ_API_KEY` | Groq API key for LLM classification |
+| `LLM_API_KEY` | Groq key read by `Scrapers/local_llm_function.py` |
+| `LLM_MODEL` | Groq model for live and batch classification, default `llama-3.1-8b-instant` |
+| `GROQ_BATCH_BUCKET` | Optional Storage bucket override, default `groq-batch-requests` |
+| `GROQ_BATCH_QUEUE_DIR` | Optional prefix before daily batch folders |
 | `EMAIL_SENDER` | Gmail address for sending emails |
 | `EMAIL_PASSWORD` | Gmail app password |
 | `EMAIL_RECIPIENTS` | Comma-separated recipient list |
